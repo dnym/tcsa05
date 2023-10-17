@@ -281,3 +281,16 @@ Select a Session: _
 Press [PgDown] to go to the next page,
 or [Esc] to go back to the main menu.
 ```
+
+## Logic Checklist
+- [x] Understand C# programming and basic syntax.
+- [x] Know how to make a console menu & take user input
+- [x] Know how to validate user input.
+- [ ] Learn about Data Transfer Objects (DTOs) and how to use them.
+- [x] Know how to read an XML config file.
+- [x] Understand SQL queries and basic syntax.
+- [x] Know how to implement CRUD queries.
+- [x] Understand database relationships, including foreign keys.
+- [x] Understand CASCADE DELETE for table relationships.
+- [ ] Know how to connect C# applications to SQL Server and execute queries.
+- [ ] Be familiar with SQL Server and know how to create databases and tables.
