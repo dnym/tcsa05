@@ -59,6 +59,8 @@
   - Give an error and exit (since there's probably no good default fallback value for a SQL Server connection string).
 - Should DTO be used for study session history as well?
   - Yes.
+- What if SQL Server doesn't work? E.g. can't create tables, or read, or write.
+  - Give an error and exit.
 
 ## MVP Functionality
 
@@ -80,3 +82,202 @@
   - For average score
 - More advanced flashcard structure
 - More (meta) properties for stacks and flashcards
+
+## User Interface
+Main menu:
+```text
+Flashcards
+======================================
+
+1. [S]tudy Session
+2. [M]anage Stacks & Flashcards
+3. View Study [H]istory
+0. [Q]uit
+
+--------------------------------------
+Select by pressing a number or letter.
+```
+
+Viewing stacks:
+```text
+Manage Stacks (page 1/3)
+========================================
+
++-name-+-cards-+-----last studied----+
+| Foo  | 120   | 2023-10-17 12:13:14 |
++------+-------+---------------------+
+| Bar  | 43    | 2023-10-15 18:55:58 |
++------+-------+---------------------+
+| Baz  | 67    | 2023-10-14 22:03:31 |
++------+-------+---------------------+
+
+Select a Stack: _
+
+----------------------------------------
+Press [PgDown] to go to the next page,
+or [Esc] to go back to the main menu.
+```
+
+Managing single stack:
+```text
+Managing Stack: Foo
+======================================
+
+1. [C]reate New Flashcards in Stack
+2. [B]rowse Flashcards
+3. [R]ename Stack
+4. [D]elete Stack
+0. Go Back to [S]tacks Overview
+
+--------------------------------------
+Select by pressing a number or letter.
+```
+
+Creating flashcard:
+```text
+Creating Flashcard in Stack: Foo
+====================================
+
+Enter a front side question: How do you declare a variab...
+
+Enter a back side answer: _
+
+------------------------------------
+0 cards created.
+Press [Esc] to go back to the stack.
+```
+
+Viewing flashcards:
+```text
+Flashcards in Foo (page 1/3)
+========================================
+
++-no.-+-----------front-----------+-----------back-----------+
+| 1   | How do you declare a v... | int myVariable;          |
++-----+---------------------------+--------------------------+
+| 2   | What is the SQL statem... | SELECT * FROM Customers; |
++-----+---------------------------+--------------------------+
+| 3   | In C#, what keyword is... | sealed                   |
++-----+---------------------------+--------------------------+
+
+Select a Flashcard: _
+
+----------------------------------------
+Press [PgDown] to go to the next page,
+or [Esc] to go back to the main menu.
+```
+
+Managing single flashcard:
+```text
+Managing Flashcard in Stack: Foo
+===============================================
+
+Front side question:
+  How do you declare a variable in C# to store an integer?
+
+Back side answer:
+  int myVariable;
+
+-----------------------------------------------
+Press [E] to edit the flashcard, [D] to delete,
+[M] to move it to a different stack,
+or [Esc] to go back to the stack.
+```
+
+Study Session area:
+```text
+Study a Stack (page 1/3)
+======================================
+
++-name-+-cards-+-----last studied----+
+| Foo  | 121   | 2023-10-17 12:13:14 |
++------+-------+---------------------+
+| Bar  | 43    | 2023-10-15 18:55:58 |
++------+-------+---------------------+
+| Baz  | 67    | 2023-10-14 22:03:31 |
++------+-------+---------------------+
+
+Select a Stack: _
+
+--------------------------------------
+Press [PgDown] to go to the next page,
+or [Esc] to go back to the stack.
+```
+
+Studying:
+```text
+Studying Stack: Foo
+====================================
+
++-------------------------------+
+| How do you declare a variable |
+| in C# to store an integer?    |
++-------------------------------+
+|              ???              |
++-------------------------------+
+
+Enter your answer:
+  _
+
+------------------------------------
+Press [Esc] to go back to the stack.
+```
+
+Answering correctly:
+```text
+Studying Stack: Foo
+============================================
+
++-------------------------------+
+| How do you declare a variable |
+| in C# to store an integer?    |
++-------------------------------+
+|        int myVariable;        |
++-------------------------------+
+
+You were correct!
+
+--------------------------------------------
+Press [Esc] to go back to the stack,
+or any other key to go to the next question.
+```
+
+Answering incorrectly:
+```text
+Studying Stack: Foo
+============================================
+
++-------------------------------+
+| How do you declare a variable |
+| in C# to store an integer?    |
++-------------------------------+
+|        int myVariable;        |
++-------------------------------+
+
+Your answer was incorrect. You wrote:
+  float myVariable;
+
+--------------------------------------------
+Press [Esc] to go back to the stack,
+or any other key to go to the next question.
+```
+
+Viewing history:
+```text
+Study History (page 1/43)
+========================================
+
++-no.-+---------date--------+-stack-+-cards-+-result-+
+| 1   | 2023-10-17 13:59:12 | Foo   | 3     | 3/3    |
++-----+---------------------+-------+-------+--------+
+| 2   | 2023-10-17 11:19:47 | Foo   | 11    | 8/11   |
++-----+---------------------+-------+-------+--------+
+| 3   | 2023-10-15 18:55:58 | Bar   | 7     | 6/7    |
++-----+---------------------+-------+-------+--------+
+
+Select a Session: _
+
+----------------------------------------
+Press [PgDown] to go to the next page,
+or [Esc] to go back to the main menu.
+```
