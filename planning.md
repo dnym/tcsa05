@@ -47,3 +47,9 @@
   - >Yes, CASCADE DELETE should be used for the relationship between stack deletion and the associated study session history in the database. This ensures that when a stack is deleted, its linked session history records are also removed to maintain data consistency.
 - How should the question-and-answer process work? Should the user input be taken directly and compared with the answer? If so, case-insensitive with trimming of whitespace?
   - >The user input should be compared with the answer directly, with case-insensitive matching and trimming of whitespace for a more forgiving user experience. This approach ensures that minor variations in input are accepted.
+
+### Follow-up Questions
+- Since stack deletion leads to study session history deletion through CASCADE DELETE, and since individual flashcard results are to be recorded, does this mean that flashcard deletion also lead to CASCADE DELETE for study session history?
+  - >Based on the project requirements, flashcard deletion should also lead to CASCADE DELETE for study session history. This ensures consistency, as flashcard results are tied to specific flashcards, and deleting them should remove associated session history to maintain data integrity.
+  - How should study session overall scores function in the event that flashcards were deleted? For example, if I answered 4/5 correctly by answering correctly for flashcards with ids 1, 2, 3 and 4, and then I delete flashcard 1, should the overall score be recalculated (to 3/4) or kept intact?
+    - >In the event of flashcard deletion, the overall score for a study session should be recalculated to reflect the remaining flashcards. In your example, if you initially answered 4/5 correctly and then deleted flashcard 1, the score should be recalculated to 3/4 to accurately represent your performance.
