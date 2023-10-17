@@ -53,3 +53,9 @@
   - >Based on the project requirements, flashcard deletion should also lead to CASCADE DELETE for study session history. This ensures consistency, as flashcard results are tied to specific flashcards, and deleting them should remove associated session history to maintain data integrity.
   - How should study session overall scores function in the event that flashcards were deleted? For example, if I answered 4/5 correctly by answering correctly for flashcards with ids 1, 2, 3 and 4, and then I delete flashcard 1, should the overall score be recalculated (to 3/4) or kept intact?
     - >In the event of flashcard deletion, the overall score for a study session should be recalculated to reflect the remaining flashcards. In your example, if you initially answered 4/5 correctly and then deleted flashcard 1, the score should be recalculated to 3/4 to accurately represent your performance.
+
+## MVP Functionality
+
+### Necessary Functionality
+
+### Possible Later Functionality
