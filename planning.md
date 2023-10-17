@@ -53,9 +53,30 @@
   - >Based on the project requirements, flashcard deletion should also lead to CASCADE DELETE for study session history. This ensures consistency, as flashcard results are tied to specific flashcards, and deleting them should remove associated session history to maintain data integrity.
   - How should study session overall scores function in the event that flashcards were deleted? For example, if I answered 4/5 correctly by answering correctly for flashcards with ids 1, 2, 3 and 4, and then I delete flashcard 1, should the overall score be recalculated (to 3/4) or kept intact?
     - >In the event of flashcard deletion, the overall score for a study session should be recalculated to reflect the remaining flashcards. In your example, if you initially answered 4/5 correctly and then deleted flashcard 1, the score should be recalculated to 3/4 to accurately represent your performance.
+- Should pagination be used when browsing stacks and flashcards?
+  - Yes.
+- What if the config file is missing?
+  - Give an error and exit (since there's probably no good default fallback value for a SQL Server connection string).
+- Should DTO be used for study session history as well?
+  - Yes.
 
 ## MVP Functionality
 
 ### Necessary Functionality
+- Create SQL Server database with tables using foreign keys
+  - CASCADE DELETE
+- Configuration reading
+- Console menu system & data presentation & user input
+  - Stacks listing screen & stack management screen: add, delete, rename
+  - Flashcard listing screen & flashcard management screen: add, delete, modify
+    - Numbered lists when browsing flashcards in stacks
+  - Study Session section
+  - Study session history & screen (read-only)
+- DTOs for both stacks with flashcards, and single flashcards, as well as study session history
 
 ### Possible Later Functionality
+- Report generation system
+  - For number of sessions
+  - For average score
+- More advanced flashcard structure
+- More (meta) properties for stacks and flashcards
