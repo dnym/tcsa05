@@ -288,7 +288,7 @@ or [Esc] to go back to the main menu.
 - [x] Understand C# programming and basic syntax.
 - [x] Know how to make a console menu & take user input
 - [x] Know how to validate user input.
-- [ ] Learn about Data Transfer Objects (DTOs) and how to use them.
+- [x] Learn about Data Transfer Objects (DTOs) and how to use them.
 - [x] Know how to read an XML config file.
 - [x] Understand SQL queries and basic syntax.
 - [x] Know how to implement CRUD queries.
@@ -296,3 +296,75 @@ or [Esc] to go back to the main menu.
 - [x] Understand CASCADE DELETE for table relationships.
 - [ ] Know how to connect C# applications to SQL Server and execute queries.
 - [ ] Be familiar with SQL Server and know how to create databases and tables.
+
+## Data Structures
+
+- Database
+  - Stacks
+    - Id (int, primary key)
+    - SortName (string, unique)
+    - ViewName (string)
+  - Flashcards
+    - Id (int, primary key)
+    - StackId (int, foreign key -> Stack.Id, CASCADE DELETE)
+    - Front (string)
+    - Back (string)
+  - History
+    - Id (int, primary key)
+    - StartDate (string)
+  - HistoryToFlashcard
+    - Id (int, primary key)
+    - HistoryId (int, foreign key -> History.Id, CASCADE DELETE)
+    - FlashcardId (int, foreign key -> Flashcard.Id, CASCADE DELETE)
+    - WasCorrect (bool)
+    - AnswerDate (string)
+- DTOs
+  - NewStack
+    - ViewName (string)
+  - StackListItem
+    - Id (int)
+    - ViewName (string)
+    - Cards (int)
+    - LastStudied (DateTime)
+  - NewFlashcard
+    - StackId (int)
+    - Front (string)
+    - Back (string)
+  - ExistingFlashcard
+    - Id (int)
+    - Front (string)
+    - Back (string)
+  - HistoryListItem
+    - Id (int)
+    - StartDate (DateTime)
+    - StackName (string)
+    - CardsStudied (int)
+    - CorrectAnswers (int)
+  - NewHistory
+    - StartDate (DateTime)
+    - StackId (int)
+    - Results (`List<CardStudyDTO>`)
+  - CardStudyDTO
+    - FlashcardId (int)
+    - WasCorrect (bool)
+    - AnswerDate (DateTime)
+- Models
+  - Stack
+    - Id (int)
+    - ViewName (string)
+    - SortName (string, transformation of ViewName)
+    - Cards (int)
+  - Flashcard
+    - Id (int)
+    - Front (string)
+    - Back (string)
+    - Stack (`Stack`)
+  - StudySession
+    - Id (int)
+    - StartDate (DateTime)
+    - Stack (`Stack`)
+    - Results (`List<CardStudy>`)
+  - CardStudy
+    - Card (Flashcard)
+    - WasCorrect (bool)
+    - AnswerDate (DateTime)
