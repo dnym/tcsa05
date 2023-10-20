@@ -20,9 +20,9 @@ public class Screen
     /// <para>A screen works by writing to console first the header, then the footer, and lastly the body, which may or may not end with a user input prompt, and then listen for keys as supplied as actions.</para>
     /// <para>As functions, the header, body, and footer can be made to depend on state unknown to this class. (Basically "if X, print this, if Y print that".)</para>
     /// </summary>
-    /// <param name="header">Function taking usable width and usable height and returning header text; characters and lines outside of these limits will be cut off.</param>
+    /// <param name="header">Function taking usable width and usable height (not counting padding and separators/border) and returning header text; characters and lines outside of these limits will be cut off.</param>
     /// <param name="body">Function taking usable width and usable height and returning body text; characters and lines outside of these limits will be cut off.</param>
-    /// <param name="footer">Function taking usable width and usable height and returning footer text; characters and lines outside of these limits will be cut off.</param>
+    /// <param name="footer">Function taking usable width and usable height (not counting padding and separators/border) and returning footer text; characters and lines outside of these limits will be cut off.</param>
     /// <param name="actions">Actions to be invoked upon key press.</param>
     /// <param name="anyKeyAction">Action to be invoked upon key press not covered by the actions dictionary. The any-key action is ignored if the prompt handler is set.</param>
     /// <param name="promptHandling">Action to invoke if the screen body is to end with a user input prompt; the user's input string is sent to this action. Note that any keys (e.g. letters) bound by the actions dictionary cannot be caught by the prompt; if needed, these may be removed while the prompt is shown.</param>
@@ -103,6 +103,10 @@ public class Screen
         // The reason for writing header and footer first is to know the height available to the body.
         // When listening to keys, any single key resets the loop.
         // Note that when showing a prompt, that's an inner loop, although temporary input is stored between loop iterations.
+        const int headerSeparatorHeight = 1;
+        const int headerPadding = 1;
+        const int footerPadding = 1;
+        const int footerSeparatorHeight = 1;
         _stayInScreen = true;
         string userInput = "";
         int userInputPosition = 0;
@@ -112,19 +116,19 @@ public class Screen
             var (winWidth, winHeight) = (System.Console.WindowWidth, System.Console.WindowHeight);
             var (usableWidth, usableHeight) = (winWidth, winHeight);
 
-            var header = CapStrings(usableWidth, usableHeight, _header(usableWidth, usableHeight));
+            int usableHeightForHeader = Math.Max(0, usableHeight - (headerSeparatorHeight + headerPadding));
+            var header = CapStrings(usableWidth, usableHeightForHeader, _header(usableWidth, usableHeightForHeader));
             if (!string.IsNullOrEmpty(header))
             {
-                // +2 for the header separator bar with empty line.
                 // TODO: Maybe generalize and make available to users the number of "extra" lines.
-                usableHeight = Math.Max(0, usableHeight - (CountLines(header) + 2));
+                usableHeight = Math.Max(0, usableHeight - (CountLines(header) + headerSeparatorHeight + headerPadding));
             }
 
-            var footer = CapStrings(usableWidth, usableHeight, _footer(usableWidth, usableHeight));
+            int usableHeightForFooter = Math.Max(0, usableHeight - (footerPadding + footerSeparatorHeight));
+            var footer = CapStrings(usableWidth, usableHeightForFooter, _footer(usableWidth, usableHeightForFooter));
             if (!string.IsNullOrEmpty(footer))
             {
-                // +2 for the footer separator bar with empty line.
-                usableHeight = Math.Max(0, usableHeight - (CountLines(footer) + 2));
+                usableHeight = Math.Max(0, usableHeight - (footerPadding + footerSeparatorHeight + CountLines(footer)));
             }
 
             // Now body is informed of the usable space sans header and footer with separators.
