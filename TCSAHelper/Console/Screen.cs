@@ -14,6 +14,10 @@ public class Screen
     private bool _stayInScreen;
 
     public Action ExitScreen => () => _stayInScreen = false;
+    public const int HeaderSeparatorHeight = 1;
+    public const int HeaderPadding = 1;
+    public const int FooterPadding = 1;
+    public const int FooterSeparatorHeight = 1;
 
     /// <summary>
     /// <para>Create a screen.</para>
@@ -103,10 +107,6 @@ public class Screen
         // The reason for writing header and footer first is to know the height available to the body.
         // When listening to keys, any single key resets the loop.
         // Note that when showing a prompt, that's an inner loop, although temporary input is stored between loop iterations.
-        const int headerSeparatorHeight = 1;
-        const int headerPadding = 1;
-        const int footerPadding = 1;
-        const int footerSeparatorHeight = 1;
         _stayInScreen = true;
         string userInput = "";
         int userInputPosition = 0;
@@ -116,19 +116,19 @@ public class Screen
             var (winWidth, winHeight) = (System.Console.WindowWidth, System.Console.WindowHeight);
             var (usableWidth, usableHeight) = (winWidth, winHeight);
 
-            int usableHeightForHeader = Math.Max(0, usableHeight - (headerSeparatorHeight + headerPadding));
+            int usableHeightForHeader = Math.Max(0, usableHeight - (HeaderSeparatorHeight + HeaderPadding));
             var header = CapStrings(usableWidth, usableHeightForHeader, _header(usableWidth, usableHeightForHeader));
             if (!string.IsNullOrEmpty(header))
             {
                 // TODO: Maybe generalize and make available to users the number of "extra" lines.
-                usableHeight = Math.Max(0, usableHeight - (CountLines(header) + headerSeparatorHeight + headerPadding));
+                usableHeight = Math.Max(0, usableHeight - (CountLines(header) + HeaderSeparatorHeight + HeaderPadding));
             }
 
-            int usableHeightForFooter = Math.Max(0, usableHeight - (footerPadding + footerSeparatorHeight));
+            int usableHeightForFooter = Math.Max(0, usableHeight - (FooterPadding + FooterSeparatorHeight));
             var footer = CapStrings(usableWidth, usableHeightForFooter, _footer(usableWidth, usableHeightForFooter));
             if (!string.IsNullOrEmpty(footer))
             {
-                usableHeight = Math.Max(0, usableHeight - (footerPadding + footerSeparatorHeight + CountLines(footer)));
+                usableHeight = Math.Max(0, usableHeight - (FooterPadding + FooterSeparatorHeight + CountLines(footer)));
             }
 
             // Now body is informed of the usable space sans header and footer with separators.
