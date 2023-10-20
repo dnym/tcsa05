@@ -294,8 +294,8 @@ or [Esc] to go back to the main menu.
 - [x] Know how to implement CRUD queries.
 - [x] Understand database relationships, including foreign keys.
 - [x] Understand CASCADE DELETE for table relationships.
-- [ ] Know how to connect C# applications to SQL Server and execute queries.
-- [ ] Be familiar with SQL Server and know how to create databases and tables.
+- [x] Know how to connect C# applications to SQL Server and execute queries.
+- [x] Be familiar with SQL Server and know how to create databases and tables.
 
 ## Data Structures
 
