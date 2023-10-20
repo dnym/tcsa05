@@ -5,6 +5,8 @@ VisualStudioVersion = 17.7.34202.233
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flashcards", "Flashcards\Flashcards.csproj", "{F672A3E1-A1CB-419B-BBF5-05CFE18A0F58}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TCSAHelper", "TCSAHelper\TCSAHelper.csproj", "{5DABB5A1-BBCD-4A53-8DAA-7732EB602940}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{F672A3E1-A1CB-419B-BBF5-05CFE18A0F58}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F672A3E1-A1CB-419B-BBF5-05CFE18A0F58}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F672A3E1-A1CB-419B-BBF5-05CFE18A0F58}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5DABB5A1-BBCD-4A53-8DAA-7732EB602940}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5DABB5A1-BBCD-4A53-8DAA-7732EB602940}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5DABB5A1-BBCD-4A53-8DAA-7732EB602940}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5DABB5A1-BBCD-4A53-8DAA-7732EB602940}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
