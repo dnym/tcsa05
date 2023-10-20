@@ -59,6 +59,10 @@ public class Screen
 
     private static string CapStrings(int maxWidth, int maxLines, string text)
     {
+        if (maxWidth < 0 || maxLines < 0)
+        {
+            throw new ArgumentException("Max width and max lines cannot be negative numbers.");
+        }
         var lines = new List<string>();
         foreach (var line in text.Split('\n'))
         {
@@ -68,7 +72,17 @@ public class Screen
             }
             else if (line.Length > maxWidth)
             {
-                string l = line[..(maxWidth - _widthEllipsis.Length)] + _widthEllipsis;
+                string l;
+                if (maxWidth < _widthEllipsis.Length)
+                {
+                    // E.g. "Hel" with "lo World" cut off.
+                    l = line[..maxWidth];
+                }
+                else
+                {
+                    // E.g. "Hello..." with " World" cut off, implied by ellipsis.
+                    l = line[..(maxWidth - _widthEllipsis.Length)] + _widthEllipsis;
+                }
                 lines.Add(l);
             }
             else
