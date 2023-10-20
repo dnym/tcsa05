@@ -16,7 +16,7 @@ internal static class MainMenu
         var screen = new Screen(header: (_, _) => header, body: (_, _) => body, footer: (_, _) => footer);
 
         void StudySession() => Console.WriteLine("StudySessionMenu.Get().Show()");
-        void ManageStacks() => Console.WriteLine("ManageStacksMenu.Get().Show()");
+        void ManageStacks() => ManageStacksMenu.Get().Show();
         void StudyHistory() => Console.WriteLine("StudyHistoryMenu.Get().Show()");
 
         screen.AddAction(ConsoleKey.S, StudySession);
