@@ -13,5 +13,4 @@ internal class Flashcard
     public string Front { get; set; }
     public string Back { get; set; }
     public Stack Stack { get; set; }
-
 }
