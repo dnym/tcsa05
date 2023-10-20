@@ -16,6 +16,17 @@ public static class Utils
         if (perPageListHeightOverhead < 0) throw new ArgumentException("Per page list height overhead must be a non-negative number.");
         if (skippedItems < 0) throw new ArgumentException("Skipped items must be a non-negative number.");
 
+        if (heightAvailableToList < (perPageListHeightOverhead + heightPerItem))
+        {
+            // If there's not enough room for even one item...
+            return new PaginationResult
+            {
+                ItemsPerPage = 0,
+                CurrentPage = 0,
+                TotalPages = 0
+            };
+        }
+
         int itemsPerPage = (heightAvailableToList - perPageListHeightOverhead) / heightPerItem;
         int totalPages = (int)Math.Ceiling((double)listLength / itemsPerPage);
         int currentPage = (int)Math.Ceiling((double)skippedItems / itemsPerPage) + 1;
