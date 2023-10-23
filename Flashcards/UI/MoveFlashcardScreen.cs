@@ -7,7 +7,7 @@ internal static class MoveFlashcardScreen
 {
     public static Screen Get(int flashcardId)
     {
-        var card = Program.Flashcards.Find(f => f.Id == flashcardId);
+        var card = Program.Flashcards.Find(f => f.Id == flashcardId) ?? throw new ArgumentException($"No flashcard with ID {flashcardId} exists.");
         string error = string.Empty;
 
         Screen screen = new(header: (_, _) => "Move Flashcard", body: (_, _) => $"{error}The card is currently in the \"{card.Stack.ViewName}\" stack.\n\nEnter another stack's name: ", footer: (_, _) => "Press [Esc] to cancel.");

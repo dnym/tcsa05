@@ -82,7 +82,7 @@ internal static class CreateOrRenameStackMenu
                     else
                     {
                         error = string.Empty;
-                        var stack = Program.Stacks.Find(s => s.ViewName == oldViewName)!;
+                        var stack = Program.Stacks.Find(s => s.ViewName == oldViewName) ?? throw new InvalidOperationException($"No stack with name \"{oldViewName}\" exists.");
                         stack.ViewName = userInput;
                         newStackMessage = $"{stack.ViewName}\n\nRenamed stack \"{oldViewName}\" to \"{stack.ViewName}\".";
                         screen.SetPromptAction(null);

@@ -6,7 +6,7 @@ internal static class ManageSingleStackMenu
 {
     public static Screen Get(int stackId)
     {
-        var stack = Program.Stacks.Find(s => s.Id == stackId)!;
+        var stack = Program.Stacks.Find(s => s.Id == stackId) ?? throw new ArgumentException($"No stack with ID {stackId} exists.");
 
         var screen = new Screen(header: (_, _) => $"Manage Stack: {stack.ViewName}",
             body: (_, _) => @"1. [C]reate New Flashcards in Stack

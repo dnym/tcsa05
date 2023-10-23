@@ -17,7 +17,7 @@ internal static class ManageFlashcardsMenu
         int previouslyUsableHeight = -1;
         int skip = 0;
 
-        Stack? stack = Program.Stacks.Find(s => s.Id == stackId);
+        var stack = Program.Stacks.Find(s => s.Id == stackId) ?? throw new ArgumentException($"No stack with ID {stackId} exists.");
         List<Flashcard> flashcards = Program.Flashcards.Where(f => f.Stack == stack).ToList();
 
         Screen screen = new(header: (_, usableHeight) =>
@@ -31,7 +31,7 @@ internal static class ManageFlashcardsMenu
             }
             else if (skip >= flashcards.Count)
             {
-                skip = flashcards.Count - paginationResult!.ItemsPerPage;
+                skip = flashcards.Count - (paginationResult?.ItemsPerPage ?? 0);
             }
             else if (skip < 0)
             {
@@ -70,7 +70,7 @@ internal static class ManageFlashcardsMenu
             {
                 footerText += "[PgUp] to go to the previous page,\n";
             }
-            if (paginationResult.CurrentPage < paginationResult.TotalPages)
+            if (paginationResult!.CurrentPage < paginationResult.TotalPages)
             {
                 footerText += "[PgDown] to go to the next page,\n";
             }

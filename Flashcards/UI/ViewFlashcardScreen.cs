@@ -6,7 +6,7 @@ internal static class ViewFlashcardScreen
 {
     public static Screen Get(int flashcardId)
     {
-        var card = Program.Flashcards.Find(f => f.Id == flashcardId);
+        var card = Program.Flashcards.Find(f => f.Id == flashcardId) ?? throw new ArgumentException($"No flashcard with ID {flashcardId} exists.");
 
         Screen screen = new(header: (_, _) => $"Managing Flashcard in Stack: {card.Stack.ViewName}", body: (_, _) => $"Front side question:\n  {card.Front}\n\nBack side answer:\n  {card.Back}", footer: (_, _) =>
         @"Press [E] to edit the flashcard, [D] to delete,

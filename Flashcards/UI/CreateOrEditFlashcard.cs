@@ -9,7 +9,7 @@ internal static class CreateOrEditFlashcard
     {
         string? front = null;
         string? back = null;
-        var stack = Program.Stacks.Find(s => s.Id == stackId);
+        var stack = Program.Stacks.Find(s => s.Id == stackId) ?? throw new ArgumentException($"No stack with ID {stackId} exists.");
         var card = Program.Flashcards.Find(f => f.Id == (flashcardId ?? -1));
         int cardsCreated = 0;
 
