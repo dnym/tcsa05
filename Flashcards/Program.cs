@@ -1,6 +1,4 @@
 ﻿using Flashcards.Models;
-using System.Diagnostics;
-using System;
 using TCSAHelper.General;
 
 namespace Flashcards;
