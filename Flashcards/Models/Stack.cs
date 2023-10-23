@@ -9,6 +9,11 @@ internal class Stack
 
     public int Id { get; set; } = -1;
     public string ViewName { get; set; }
-    public string SortName => ViewName.Trim().ToLower();
+    public string SortName => CreateSortName(ViewName);
     public int Cards { get; set; } = 0;
+
+    public static string CreateSortName(string viewName)
+    {
+        return viewName.Trim().ToLower();
+    }
 }
