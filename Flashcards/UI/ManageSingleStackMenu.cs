@@ -16,15 +16,25 @@ internal static class ManageSingleStackMenu
 0. Go Back to [S]tacks Overview",
             footer: (_, _) => "Select by pressing a number or letter,\nor press [Esc] to go back.");
         screen.AddAction(ConsoleKey.C, () => Console.WriteLine("Create Flashcards"));
+        screen.AddAction(ConsoleKey.D1, () => Console.WriteLine("Create Flashcards"));
+
         screen.AddAction(ConsoleKey.B, () => Console.WriteLine("Browse Flashcards"));
+        screen.AddAction(ConsoleKey.D2, () => Console.WriteLine("Browse Flashcards"));
+
         screen.AddAction(ConsoleKey.R, () => CreateOrRenameStackMenu.Get(stack.ViewName).Show());
-        screen.AddAction(ConsoleKey.D, () =>
+        screen.AddAction(ConsoleKey.D3, () => CreateOrRenameStackMenu.Get(stack.ViewName).Show());
+
+        void DeleteStack()
         {
             Program.Flashcards.RemoveAll(f => f.Stack == stack);
             Program.Stacks.Remove(stack);
             screen.ExitScreen();
-        });
+        }
+        screen.AddAction(ConsoleKey.D, DeleteStack);
+        screen.AddAction(ConsoleKey.D4, DeleteStack);
+
         screen.AddAction(ConsoleKey.S, screen.ExitScreen);
+        screen.AddAction(ConsoleKey.D0, screen.ExitScreen);
         screen.AddAction(ConsoleKey.Escape, screen.ExitScreen);
         return screen;
     }
