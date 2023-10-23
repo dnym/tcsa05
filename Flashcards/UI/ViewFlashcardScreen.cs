@@ -17,6 +17,7 @@ or [Esc] to go back to the stack.");
         screen.AddAction(ConsoleKey.D, () =>
         {
             Program.Flashcards.Remove(card);
+            card.Stack.Cards--;
             screen.ExitScreen();
         });
         screen.AddAction(ConsoleKey.M, () => MoveFlashcardScreen.Get(card.Id).Show());

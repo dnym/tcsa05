@@ -29,7 +29,7 @@ internal static class ManageFlashcardsMenu
                 previouslyUsableHeight = usableHeight;
                 skip = 0;
             }
-            else if (skip >= flashcards.Count)
+            else if (flashcards.Count > 0 && skip >= flashcards.Count)
             {
                 skip = flashcards.Count - (paginationResult?.ItemsPerPage ?? 0);
             }
@@ -86,7 +86,7 @@ internal static class ManageFlashcardsMenu
         {
             screen.SetPromptAction((userInput) =>
             {
-                if (int.TryParse(userInput, out int flashcardNumber) && flashcardNumber > 0 && flashcardNumber <= paginationResult!.ItemsPerPage)
+                if (int.TryParse(userInput, out int flashcardNumber) && flashcardNumber > 0 && flashcardNumber <= (flashcards.Count - skip) && flashcardNumber <= paginationResult!.ItemsPerPage)
                 {
                     int flashcardIndex = flashcardNumber - 1 + skip;
                     var flashcard = flashcards[flashcardIndex];

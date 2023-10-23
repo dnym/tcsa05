@@ -30,7 +30,10 @@ internal static class MoveFlashcardScreen
             }
             else
             {
+                card.Stack.Cards--;
                 card.Stack = otherStack;
+                card.Stack.Cards++;
+
                 screen.ExitScreen();
             }
         });

@@ -78,6 +78,7 @@ internal static class CreateOrEditFlashcard
                             Id = ++Program.CurrentFlashcardId
                         };
                         Program.Flashcards.Add(newCard);
+                        stack.Cards++;
                         cardsCreated++;
                         front = null;
                         back = null;

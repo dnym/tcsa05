@@ -51,6 +51,7 @@ internal static class Program
                         Id = ++CurrentFlashcardId
                     };
                     Flashcards.Add(newCard);
+                    stack.Cards++;
                 }
             }
         }
