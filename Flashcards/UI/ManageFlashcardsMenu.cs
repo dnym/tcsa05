@@ -22,11 +22,22 @@ internal static class ManageFlashcardsMenu
 
         Screen screen = new(header: (_, usableHeight) =>
         {
+            flashcards = Program.Flashcards.Where(f => f.Stack == stack).ToList();
+
             if (usableHeight != previouslyUsableHeight)
             {
                 previouslyUsableHeight = usableHeight;
                 skip = 0;
             }
+            else if (skip >= flashcards.Count)
+            {
+                skip = flashcards.Count - paginationResult!.ItemsPerPage;
+            }
+            else if (skip < 0)
+            {
+                skip = 0;
+            }
+
             int heightAvailableToBody = usableHeight - (headerHeight + footerHeight);
             paginationResult = DeterminePagination(heightAvailableToBody, flashcards.Count, perPageListHeightOverhead: promptHeight, skippedItems: skip);
             if (paginationResult.TotalPages > 1)
@@ -80,6 +91,10 @@ internal static class ManageFlashcardsMenu
                     int flashcardIndex = flashcardNumber - 1 + skip;
                     var flashcard = flashcards[flashcardIndex];
                     ViewFlashcardScreen.Get(flashcard.Id).Show();
+                }
+                else
+                {
+                    Console.Beep();
                 }
             });
         }

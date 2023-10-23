@@ -14,7 +14,11 @@ internal static class ViewFlashcardScreen
 or [Esc] to go back to the stack.");
 
         screen.AddAction(ConsoleKey.E, () => Console.Write("Edit flashcard"));
-        screen.AddAction(ConsoleKey.D, () => Console.Write("Delete flashcard"));
+        screen.AddAction(ConsoleKey.D, () =>
+        {
+            Program.Flashcards.Remove(card);
+            screen.ExitScreen();
+        });
         screen.AddAction(ConsoleKey.M, () => Console.Write("Move flashcard"));
         screen.AddAction(ConsoleKey.Escape, screen.ExitScreen);
 
