@@ -12,6 +12,7 @@ public class Screen
     private Action? _anyKeyAction;
     private Action<string>? _promptHandling;
     private bool _stayInScreen;
+    private string? _defaultUserInput;
 
     public Action ExitScreen => () => _stayInScreen = false;
     public const int HeaderSeparatorHeight = 1;
@@ -61,6 +62,11 @@ public class Screen
         _promptHandling = action;
     }
 
+    public void SetDefaultUserInput(string? userInput)
+    {
+        _defaultUserInput = userInput;
+    }
+
     private static string CapStrings(int maxWidth, int maxLines, string text)
     {
         if (maxWidth < 0 || maxLines < 0)
@@ -108,10 +114,17 @@ public class Screen
         // When listening to keys, any single key resets the loop.
         // Note that when showing a prompt, that's an inner loop, although temporary input is stored between loop iterations.
         _stayInScreen = true;
-        string userInput = "";
-        int userInputPosition = 0;
+        string userInput = _defaultUserInput ?? "";
+        int userInputPosition = userInput.Length;
+        string? previousDefaultUserInput = _defaultUserInput;
         while (_stayInScreen)
         {
+            if (previousDefaultUserInput != _defaultUserInput)
+            {
+                userInput = _defaultUserInput ?? "";
+                userInputPosition = userInput.Length;
+            }
+
             System.Console.Clear();
             var (winWidth, winHeight) = (System.Console.WindowWidth, System.Console.WindowHeight);
             var (usableWidth, usableHeight) = (winWidth, winHeight);
