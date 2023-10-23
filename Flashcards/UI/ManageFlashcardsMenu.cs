@@ -74,7 +74,15 @@ internal static class ManageFlashcardsMenu
 
         if (flashcards.Any())
         {
-            screen.SetPromptAction((_) => { });
+            screen.SetPromptAction((userInput) =>
+            {
+                if (int.TryParse(userInput, out int flashcardNumber) && flashcardNumber > 0 && flashcardNumber <= paginationResult!.ItemsPerPage)
+                {
+                    int flashcardIndex = flashcardNumber - 1 + skip;
+                    var flashcard = flashcards[flashcardIndex];
+                    Console.WriteLine($"ViewFlashcardScreen.Get({flashcard.Id}).Show();");
+                }
+            });
         }
 
         screen.AddAction(ConsoleKey.PageUp, () =>
