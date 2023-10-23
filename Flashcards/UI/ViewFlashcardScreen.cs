@@ -13,7 +13,7 @@ internal static class ViewFlashcardScreen
 [M] to move it to a different stack,
 or [Esc] to go back to the stack.");
 
-        screen.AddAction(ConsoleKey.E, () => Console.Write("Edit flashcard"));
+        screen.AddAction(ConsoleKey.E, () => CreateOrEditFlashcard.Get(card.Stack.Id, card.Id).Show());
         screen.AddAction(ConsoleKey.D, () =>
         {
             Program.Flashcards.Remove(card);

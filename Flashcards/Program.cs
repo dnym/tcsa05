@@ -17,7 +17,7 @@ internal static class Program
 
     static void Main()
     {
-        AddDummyData(12, 77);
+        AddDummyData(12, 12);
         var screen = UI.MainMenu.Get();
         screen.Show();
         Console.Clear();

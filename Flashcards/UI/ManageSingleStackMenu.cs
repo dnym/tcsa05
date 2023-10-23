@@ -15,8 +15,8 @@ internal static class ManageSingleStackMenu
 4. [D]elete Stack
 0. Go Back to [S]tacks Overview",
             footer: (_, _) => "Select by pressing a number or letter,\nor press [Esc] to go back.");
-        screen.AddAction(ConsoleKey.C, () => Console.WriteLine("Create Flashcards"));
-        screen.AddAction(ConsoleKey.D1, () => Console.WriteLine("Create Flashcards"));
+        screen.AddAction(ConsoleKey.C, () => CreateOrEditFlashcard.Get(stackId).Show());
+        screen.AddAction(ConsoleKey.D1, () => CreateOrEditFlashcard.Get(stackId).Show());
 
         screen.AddAction(ConsoleKey.B, () => ManageFlashcardsMenu.Get(stack.Id).Show());
         screen.AddAction(ConsoleKey.D2, () => ManageFlashcardsMenu.Get(stack.Id).Show());
