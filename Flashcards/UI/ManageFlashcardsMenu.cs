@@ -91,6 +91,10 @@ internal static class ManageFlashcardsMenu
                     int flashcardIndex = flashcardNumber - 1 + skip;
                     var flashcard = flashcards[flashcardIndex];
                     ViewFlashcardScreen.Get(flashcard.Id).Show();
+                    if (Program.Flashcards.Find(f => f.Id == flashcard.Id) == null)
+                    {
+                        screen.SetPromptAction(null);
+                    }
                 }
                 else
                 {

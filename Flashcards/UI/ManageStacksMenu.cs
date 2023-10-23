@@ -75,6 +75,10 @@ internal static class ManageStacksMenu
             if (stack != null)
             {
                 ManageSingleStackMenu.Get(stack.Id).Show();
+                if (Program.Stacks.Count == 0)
+                {
+                    screen.SetPromptAction(null);
+                }
             }
             else
             {
