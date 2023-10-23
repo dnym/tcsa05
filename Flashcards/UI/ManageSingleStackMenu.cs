@@ -18,8 +18,8 @@ internal static class ManageSingleStackMenu
         screen.AddAction(ConsoleKey.C, () => Console.WriteLine("Create Flashcards"));
         screen.AddAction(ConsoleKey.D1, () => Console.WriteLine("Create Flashcards"));
 
-        screen.AddAction(ConsoleKey.B, () => ManageFlashcardsMenu.Get().Show());
-        screen.AddAction(ConsoleKey.D2, () => ManageFlashcardsMenu.Get().Show());
+        screen.AddAction(ConsoleKey.B, () => ManageFlashcardsMenu.Get(stack.Id).Show());
+        screen.AddAction(ConsoleKey.D2, () => ManageFlashcardsMenu.Get(stack.Id).Show());
 
         screen.AddAction(ConsoleKey.R, () => CreateOrRenameStackMenu.Get(stack.ViewName).Show());
         screen.AddAction(ConsoleKey.D3, () => CreateOrRenameStackMenu.Get(stack.ViewName).Show());
