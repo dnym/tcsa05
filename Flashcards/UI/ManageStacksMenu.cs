@@ -70,7 +70,7 @@ internal static class ManageStacksMenu
 
         void PromptHandler(string userInput)
         {
-            var stackName = new Stack(userInput).SortName;
+            var stackName = Stack.CreateSortName(userInput);
             Stack? stack = Program.Stacks.Find(s => s.SortName == stackName);
             if (stack != null)
             {
@@ -84,7 +84,7 @@ internal static class ManageStacksMenu
 
         screen.AddAction(ConsoleKey.F1, () =>
         {
-            CreateStackMenu.Get().Show();
+            CreateOrRenameStackMenu.Get().Show();
 
             if (Program.Stacks.Count > 0)
             {

@@ -17,7 +17,7 @@ internal static class ManageSingleStackMenu
             footer: (_, _) => "Select by pressing a number or letter,\nor press [Esc] to go back.");
         screen.AddAction(ConsoleKey.C, () => Console.WriteLine("Create Flashcards"));
         screen.AddAction(ConsoleKey.B, () => Console.WriteLine("Browse Flashcards"));
-        screen.AddAction(ConsoleKey.R, () => Console.WriteLine("Rename Stack"));
+        screen.AddAction(ConsoleKey.R, () => CreateOrRenameStackMenu.Get(stack.ViewName).Show());
         screen.AddAction(ConsoleKey.D, () =>
         {
             Program.Flashcards.RemoveAll(f => f.Stack == stack);
