@@ -18,7 +18,12 @@ internal static class ManageSingleStackMenu
         screen.AddAction(ConsoleKey.C, () => Console.WriteLine("Create Flashcards"));
         screen.AddAction(ConsoleKey.B, () => Console.WriteLine("Browse Flashcards"));
         screen.AddAction(ConsoleKey.R, () => Console.WriteLine("Rename Stack"));
-        screen.AddAction(ConsoleKey.D, () => Console.WriteLine("Delete Stack"));
+        screen.AddAction(ConsoleKey.D, () =>
+        {
+            Program.Flashcards.RemoveAll(f => f.Stack == stack);
+            Program.Stacks.Remove(stack);
+            screen.ExitScreen();
+        });
         screen.AddAction(ConsoleKey.S, screen.ExitScreen);
         screen.AddAction(ConsoleKey.Escape, screen.ExitScreen);
         return screen;
