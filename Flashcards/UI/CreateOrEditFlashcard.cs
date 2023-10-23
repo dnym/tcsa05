@@ -45,11 +45,11 @@ internal static class CreateOrEditFlashcard
             }
             else if (front == null || back == null)
             {
-                return "Press [Esc] to go back to the stack.";
+                return "Press [Esc] to go back.";
             }
             else
             {
-                return "Press any key to go back to the stack.";
+                return "Press any key to go back.";
             }
         });
         screen.AddAction(ConsoleKey.Escape, screen.ExitScreen);

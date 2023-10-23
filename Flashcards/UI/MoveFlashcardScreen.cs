@@ -10,7 +10,7 @@ internal static class MoveFlashcardScreen
         var card = Program.Flashcards.Find(f => f.Id == flashcardId);
         string error = string.Empty;
 
-        Screen screen = new(header: (_, _) => "Move Flashcard", body: (_, _) => $"{error}The card is currently in the {card.Stack.ViewName} stack.\n\nEnter another stack's name: ", footer: (_, _) => "Press [Esc] to cancel.");
+        Screen screen = new(header: (_, _) => "Move Flashcard", body: (_, _) => $"{error}The card is currently in the \"{card.Stack.ViewName}\" stack.\n\nEnter another stack's name: ", footer: (_, _) => "Press [Esc] to cancel.");
         screen.AddAction(ConsoleKey.Escape, screen.ExitScreen);
         screen.SetPromptAction((userInput) =>
         {
