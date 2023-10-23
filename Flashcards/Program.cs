@@ -46,8 +46,10 @@ internal static class Program
                 {
                     var front = $"What's the {stack.ViewName} word for {WordGenerator.CreateFakeWord(random)}?";
                     var back = WordGenerator.CreateFakeWord(random);
-                    var newCard = new Flashcard(front, back, stack);
-                    newCard.Id = ++CurrentFlashcardId;
+                    var newCard = new Flashcard(front, back, stack)
+                    {
+                        Id = ++CurrentFlashcardId
+                    };
                     Flashcards.Add(newCard);
                 }
             }
