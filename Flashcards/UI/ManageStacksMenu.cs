@@ -68,8 +68,17 @@ internal static class ManageStacksMenu
             return footerText;
         });
 
-        static void PromptHandler(string _/*userInput*/)
+        void PromptHandler(string userInput)
         {
+            var stackName = new Stack(userInput).SortName;
+            if (Program.Stacks.Any(s => s.SortName == stackName))
+            {
+                Console.WriteLine("ManageSingleStackMenu.Get(stackName).Show();");
+            }
+            else
+            {
+                Console.Beep();
+            }
         }
 
         screen.AddAction(ConsoleKey.F1, () =>
