@@ -19,7 +19,7 @@ or [Esc] to go back to the stack.");
             Program.Flashcards.Remove(card);
             screen.ExitScreen();
         });
-        screen.AddAction(ConsoleKey.M, () => Console.Write("Move flashcard"));
+        screen.AddAction(ConsoleKey.M, () => MoveFlashcardScreen.Get(card.Id).Show());
         screen.AddAction(ConsoleKey.Escape, screen.ExitScreen);
 
         return screen;
