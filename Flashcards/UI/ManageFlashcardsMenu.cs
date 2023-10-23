@@ -37,7 +37,6 @@ internal static class ManageFlashcardsMenu
             {
                 return $"Manage Flashcards for {stack.ViewName}";
             }
-
         }, body: (_, _) =>
         {
             if (flashcards.Any())
@@ -80,7 +79,7 @@ internal static class ManageFlashcardsMenu
                 {
                     int flashcardIndex = flashcardNumber - 1 + skip;
                     var flashcard = flashcards[flashcardIndex];
-                    Console.WriteLine($"ViewFlashcardScreen.Get({flashcard.Id}).Show();");
+                    ViewFlashcardScreen.Get(flashcard.Id).Show();
                 }
             });
         }
