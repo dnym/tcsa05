@@ -17,7 +17,7 @@ internal static class Program
 
     static void Main()
     {
-        AddDummyData(77);
+        AddDummyData(12, 77);
         var screen = UI.MainMenu.Get();
         screen.Show();
         Console.Clear();
@@ -47,6 +47,7 @@ internal static class Program
                     var front = $"What's the {stack.ViewName} word for {WordGenerator.CreateFakeWord(random)}?";
                     var back = WordGenerator.CreateFakeWord(random);
                     var newCard = new Flashcard(front, back, stack);
+                    Flashcards.Add(newCard);
                 }
             }
         }
