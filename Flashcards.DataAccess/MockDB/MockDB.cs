@@ -1,5 +1,6 @@
 ﻿using Flashcards.DataAccess.DTOs;
 using Flashcards.DataAccess.MockDB.Models;
+using System.Linq;
 
 namespace Flashcards.DataAccess.MockDB;
 
@@ -24,15 +25,30 @@ public class MockDB : IDataAccess
         return Task.FromResult(_stacks.Any(sr => sr.SortNameUQ == sortName));
     }
 
-    public Task<List<StackListItem>> GetStackListAsync(int take, int skip = 0)
+    public Task<List<StackListItem>> GetStackListAsync(int? take = null, int skip = 0)
     {
-        var output = _stacks.Skip(skip).Take(take).Select(sr => new StackListItem() {
-            Id = sr.IdPK,
-            ViewName = sr.ViewName,
-            Cards = _flashcards.Count(fr => fr.StackIdFK == sr.IdPK),
-            LastStudied = _history.Find(h => h.StackIdFK == sr.IdPK)?.StartedAt
-        }).ToList();
-        return Task.FromResult(output);
+        if (take == null)
+        {
+            var output = _stacks.Skip(skip).Select(sr => new StackListItem()
+            {
+                Id = sr.IdPK,
+                ViewName = sr.ViewName,
+                Cards = _flashcards.Count(fr => fr.StackIdFK == sr.IdPK),
+                LastStudied = _history.Find(h => h.StackIdFK == sr.IdPK)?.StartedAt
+            }).ToList();
+            return Task.FromResult(output);
+        }
+        else
+        {
+            var output = _stacks.Skip(skip).Take((int)take).Select(sr => new StackListItem()
+            {
+                Id = sr.IdPK,
+                ViewName = sr.ViewName,
+                Cards = _flashcards.Count(fr => fr.StackIdFK == sr.IdPK),
+                LastStudied = _history.Find(h => h.StackIdFK == sr.IdPK)?.StartedAt
+            }).ToList();
+            return Task.FromResult(output);
+        }
     }
 
     public Task CreateStackAsync(NewStack stack)
