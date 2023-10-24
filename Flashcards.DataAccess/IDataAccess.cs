@@ -9,6 +9,7 @@ public interface IDataAccess
     Task<List<ExistingFlashcard>> GetFlashcardListAsync(int stackId);
     Task CreateFlashcardAsync(NewFlashcard flashcard);
     Task UpdateFlashcardAsync(ExistingFlashcard flashcard);
+    Task MoveFlashcardAsync(int flashcardId, int newStackId);
     Task<List<HistoryListItem>> GetHistoryListAsync();
     Task AddHistoryAsync(NewHistory history);
 }
