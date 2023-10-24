@@ -19,6 +19,11 @@ public class MockDB : IDataAccess
         return Task.FromResult(_stacks.Skip(skip).Take((int)take).Count());
     }
 
+    public Task<bool> StackExistsAsync(string sortName)
+    {
+        return Task.FromResult(_stacks.Any(sr => sr.SortNameUQ == sortName));
+    }
+
     public Task<List<StackListItem>> GetStackListAsync(int take, int skip = 0)
     {
         var output = _stacks.Skip(skip).Take(take).Select(sr => new StackListItem() {
