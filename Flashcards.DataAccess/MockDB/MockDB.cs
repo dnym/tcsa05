@@ -10,6 +10,15 @@ public class MockDB : IDataAccess
     private readonly List<HistoryRow> _history = new();
     private readonly List<HistoryToFlashcardRow> _historyToFlashcard = new();
 
+    public Task<int> CountStacksAsync(int? take = null, int skip = 0)
+    {
+        if (take == null)
+        {
+            return Task.FromResult(_stacks.Skip(skip).Count());
+        }
+        return Task.FromResult(_stacks.Skip(skip).Take((int)take).Count());
+    }
+
     public Task<List<StackListItem>> GetStackListAsync(int take, int skip = 0)
     {
         var output = _stacks.Skip(skip).Take(take).Select(sr => new StackListItem() {

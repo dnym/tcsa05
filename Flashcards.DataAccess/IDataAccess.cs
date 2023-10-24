@@ -4,6 +4,7 @@ namespace Flashcards.DataAccess;
 
 public interface IDataAccess
 {
+    Task<int> CountStacksAsync(int? take = null, int skip = 0);
     Task<List<StackListItem>> GetStackListAsync(int take, int skip = 0);
     Task CreateStackAsync(NewStack stack);
     Task<List<ExistingFlashcard>> GetFlashcardListAsync(int stackId);
