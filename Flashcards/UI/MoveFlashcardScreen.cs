@@ -1,21 +1,23 @@
-﻿using Flashcards.Models;
+﻿using Flashcards.DataAccess;
+using Flashcards.Models;
 using TCSAHelper.Console;
 
 namespace Flashcards.UI;
 
 internal static class MoveFlashcardScreen
 {
-    public static Screen Get(int flashcardId)
+    public static Screen Get(IDataAccess dataAccess, int flashcardId)
     {
-        var card = Program.Flashcards.Find(f => f.Id == flashcardId) ?? throw new ArgumentException($"No flashcard with ID {flashcardId} exists.");
+        var card = dataAccess.GetFlashcardByIdAsync(flashcardId).Result;
+        var stack = dataAccess.GetStackListItemByFlashcardIdAsync(flashcardId).Result;
         string error = string.Empty;
 
-        Screen screen = new(header: (_, _) => "Move Flashcard", body: (_, _) => $"{error}The card is currently in the \"{card.Stack.ViewName}\" stack.\n\nEnter another stack's name: ", footer: (_, _) => "Press [Esc] to cancel.");
+        Screen screen = new(header: (_, _) => "Move Flashcard", body: (_, _) => $"{error}The card is currently in the \"{stack.ViewName}\" stack.\n\nEnter another stack's name: ", footer: (_, _) => "Press [Esc] to cancel.");
         screen.AddAction(ConsoleKey.Escape, screen.ExitScreen);
         screen.SetPromptAction((userInput) =>
         {
             var otherStackName = Stack.CreateSortName(userInput);
-            var otherStack = Program.Stacks.Find(s => s.SortName == otherStackName);
+            var otherStack = dataAccess.GetStackListItemBySortNameAsync(otherStackName).Result;
             if (string.IsNullOrEmpty(userInput))
             {
                 error = "Enter a stack name.\n\n";
@@ -24,16 +26,13 @@ internal static class MoveFlashcardScreen
             {
                 error = "There is no stack with that name.\n\n";
             }
-            else if (otherStack.SortName == card.Stack.SortName)
+            else if (dataAccess.CardInStack(otherStack.Id, flashcardId).Result)
             {
                 error = "The card is already in that stack.\n\n";
             }
             else
             {
-                card.Stack.Cards--;
-                card.Stack = otherStack;
-                card.Stack.Cards++;
-
+                dataAccess.MoveFlashcardAsync(flashcardId, otherStack.Id);
                 screen.ExitScreen();
             }
         });

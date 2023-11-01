@@ -2,12 +2,14 @@
 using Flashcards.Models;
 using System.Text;
 using TCSAHelper.Console;
+using Flashcards.DataAccess;
+using Flashcards.DataAccess.DTOs;
 
 namespace Flashcards.UI;
 
 internal static class ManageFlashcardsMenu
 {
-    public static Screen Get(int stackId)
+    public static Screen Get(IDataAccess dataAccess, int stackId)
     {
         const int headerHeight = 1;
         const int footerHeight = Screen.FooterPadding + Screen.FooterSeparatorHeight + 3;
@@ -17,21 +19,21 @@ internal static class ManageFlashcardsMenu
         int previouslyUsableHeight = -1;
         int skip = 0;
 
-        var stack = Program.Stacks.Find(s => s.Id == stackId) ?? throw new ArgumentException($"No stack with ID {stackId} exists.");
-        List<Flashcard> flashcards = Program.Flashcards.Where(f => f.Stack == stack).ToList();
+        var stack = dataAccess.GetStackListItemByIdAsync(stackId).Result;
+        List<ExistingFlashcard> flashcards = new();
 
         Screen screen = new(header: (_, usableHeight) =>
         {
-            flashcards = Program.Flashcards.Where(f => f.Stack == stack).ToList();
+            int flashcardsCount = dataAccess.CountFlashcardsAsync(stackId).Result;
 
             if (usableHeight != previouslyUsableHeight)
             {
                 previouslyUsableHeight = usableHeight;
                 skip = 0;
             }
-            else if (flashcards.Count > 0 && skip >= flashcards.Count)
+            else if (flashcardsCount > 0 && skip >= flashcardsCount)
             {
-                skip = flashcards.Count - (paginationResult?.ItemsPerPage ?? 0);
+                skip = flashcardsCount - (paginationResult?.ItemsPerPage ?? 0);
             }
             else if (skip < 0)
             {
@@ -39,7 +41,7 @@ internal static class ManageFlashcardsMenu
             }
 
             int heightAvailableToBody = usableHeight - (headerHeight + footerHeight);
-            paginationResult = DeterminePagination(heightAvailableToBody, flashcards.Count, perPageListHeightOverhead: promptHeight, skippedItems: skip);
+            paginationResult = DeterminePagination(heightAvailableToBody, flashcardsCount, perPageListHeightOverhead: promptHeight, skippedItems: skip);
             if (paginationResult.TotalPages > 1)
             {
                 return $"Manage Flashcards for {stack.ViewName} (page {paginationResult.CurrentPage}/{paginationResult.TotalPages})";
@@ -50,12 +52,15 @@ internal static class ManageFlashcardsMenu
             }
         }, body: (_, _) =>
         {
-            if (flashcards.Any())
+            int flashcardsCount = dataAccess.CountFlashcardsAsync(stackId).Result;
+
+            if (flashcardsCount > 0)
             {
                 var take = paginationResult!.ItemsPerPage;
-                return GetFlashcardList(flashcards, skip, take) + promptText;
+                flashcards = dataAccess.GetFlashcardListAsync(stackId, take, skip).Result;
+                return GetFlashcardList(flashcards) + promptText;
             }
-            else if (flashcards.Any() && paginationResult!.TotalPages == 0)
+            else if (flashcardsCount > 0 && paginationResult!.TotalPages == 0)
             {
                 return "Window is too small to list any flashcards.";
             }
@@ -82,19 +87,14 @@ internal static class ManageFlashcardsMenu
             return footerText;
         });
 
-        if (flashcards.Any())
+        if (dataAccess.CountFlashcardsAsync(stackId).Result > 0)
         {
             screen.SetPromptAction((userInput) =>
             {
-                if (int.TryParse(userInput, out int flashcardNumber) && flashcardNumber > 0 && flashcardNumber <= (flashcards.Count - skip) && flashcardNumber <= paginationResult!.ItemsPerPage)
+                if (int.TryParse(userInput, out int flashcardNumber) && flashcardNumber > 0 && flashcardNumber <= paginationResult!.ItemsPerPage && flashcardNumber <= flashcards.Count)
                 {
-                    int flashcardIndex = flashcardNumber - 1 + skip;
-                    var flashcard = flashcards[flashcardIndex];
-                    ViewFlashcardScreen.Get(flashcard.Id).Show();
-                    if (Program.Flashcards.Find(f => f.Id == flashcard.Id) == null)
-                    {
-                        screen.SetPromptAction(null);
-                    }
+                    var flashcard = flashcards[flashcardNumber - 1];
+                    ViewFlashcardScreen.Get(dataAccess, flashcard.Id).Show();
                 }
                 else
                 {
@@ -122,13 +122,12 @@ internal static class ManageFlashcardsMenu
         return screen;
     }
 
-    private static string GetFlashcardList(List<Flashcard> flashcards, int skip, int take)
+    private static string GetFlashcardList(List<ExistingFlashcard> flashcards)
     {
         var sb = new StringBuilder();
-        var subset = flashcards.Skip(skip).Take(take).ToList();
-        for (int i = 0; i < subset.Count; i++)
+        for (int i = 0; i < flashcards.Count; i++)
         {
-            var flashcard = subset[i];
+            var flashcard = flashcards[i];
             sb.Append(i + 1).Append(": ").Append(flashcard.Front).Append(" -> ").AppendLine(flashcard.Back);
         }
         return sb.ToString();

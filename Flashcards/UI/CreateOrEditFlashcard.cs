@@ -1,16 +1,21 @@
-﻿using Flashcards.Models;
+﻿using Flashcards.DataAccess;
+using Flashcards.DataAccess.DTOs;
 using TCSAHelper.Console;
 
 namespace Flashcards.UI;
 
 internal static class CreateOrEditFlashcard
 {
-    public static Screen Get(int stackId, int? flashcardId = null)
+    public static Screen Get(IDataAccess dataAccess, int stackId, int? flashcardId = null)
     {
         string? front = null;
         string? back = null;
-        var stack = Program.Stacks.Find(s => s.Id == stackId) ?? throw new ArgumentException($"No stack with ID {stackId} exists.");
-        var card = Program.Flashcards.Find(f => f.Id == (flashcardId ?? -1));
+        var stack = dataAccess.GetStackListItemByIdAsync(stackId).Result;
+        ExistingFlashcard? card = null;
+        if (flashcardId != null)
+        {
+            card = dataAccess.GetFlashcardByIdAsync((int)flashcardId).Result;
+        }
         int cardsCreated = 0;
 
         Screen screen = new(header: (_, _) =>
@@ -73,12 +78,8 @@ internal static class CreateOrEditFlashcard
                 {
                     if (card == null)
                     {
-                        var newCard = new Flashcard(front, back, stack)
-                        {
-                            Id = ++Program.CurrentFlashcardId
-                        };
-                        Program.Flashcards.Add(newCard);
-                        stack.Cards++;
+                        var newCard = new NewFlashcard { StackId = stackId, Front = front, Back = back };
+                        dataAccess.CreateFlashcardAsync(newCard).Wait();
                         cardsCreated++;
                         front = null;
                         back = null;
@@ -87,6 +88,7 @@ internal static class CreateOrEditFlashcard
                     {
                         card.Front = front;
                         card.Back = back;
+                        dataAccess.UpdateFlashcardAsync(card).Wait();
                         screen.SetPromptAction(null);
                         screen.SetAnyKeyAction(screen.ExitScreen);
                     }

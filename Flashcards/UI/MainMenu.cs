@@ -1,10 +1,11 @@
-﻿using TCSAHelper.Console;
+﻿using Flashcards.DataAccess;
+using TCSAHelper.Console;
 
 namespace Flashcards.UI;
 
 internal static class MainMenu
 {
-    public static Screen Get()
+    public static Screen Get(IDataAccess dataAccess)
     {
         const string header = "Flashcards";
         const string body = @"1. [S]tudy Session
@@ -16,7 +17,7 @@ internal static class MainMenu
         var screen = new Screen(header: (_, _) => header, body: (_, _) => body, footer: (_, _) => footer);
 
         void StudySession() => Console.WriteLine("StudySessionMenu.Get().Show()");
-        void ManageStacks() => ManageStacksMenu.Get().Show();
+        void ManageStacks() => ManageStacksMenu.Get(dataAccess).Show();
         void StudyHistory() => Console.WriteLine("StudyHistoryMenu.Get().Show()");
 
         screen.AddAction(ConsoleKey.S, StudySession);

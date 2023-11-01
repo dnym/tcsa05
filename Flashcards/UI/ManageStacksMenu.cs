@@ -2,12 +2,13 @@
 using TCSAHelper.Console;
 using System.Text;
 using Flashcards.Models;
+using Flashcards.DataAccess;
 
 namespace Flashcards.UI;
 
 internal static class ManageStacksMenu
 {
-    public static Screen Get()
+    public static Screen Get(IDataAccess dataAccess)
     {
         const int headerHeight = 1;
         // Actual footer height varies, but using a constant simplifies things (including for the user).
@@ -27,7 +28,7 @@ internal static class ManageStacksMenu
                 skip = 0;
             }
             int heightAvailableToBody = usableHeight - (headerHeight + footerHeight);
-            paginationResult = DeterminePagination(heightAvailableToBody, Program.Stacks.Count, perPageListHeightOverhead: promptHeight, skippedItems: skip);
+            paginationResult = DeterminePagination(heightAvailableToBody, dataAccess.CountStacksAsync().Result, perPageListHeightOverhead: promptHeight, skippedItems: skip);
             if (paginationResult.TotalPages > 1)
             {
                 return $"Manage Stacks (page {paginationResult.CurrentPage}/{paginationResult.TotalPages})";
@@ -41,9 +42,9 @@ internal static class ManageStacksMenu
             if (paginationResult!.TotalPages > 0)
             {
                 var take = paginationResult.ItemsPerPage;
-                return GetStackList(skip, take) + promptText;
+                return GetStackList(dataAccess, skip, take) + promptText;
             }
-            else if (Program.Stacks.Any() && paginationResult!.TotalPages == 0)
+            else if (dataAccess.CountStacksAsync().Result > 0 && paginationResult!.TotalPages == 0)
             {
                 // Note that this may actually not be true due to reserving space for PageUp and PageDown hints.
                 // TODO: Consider whether always printing the PageUp and PageDown hints, to not annoy the user by refusing to print items when there is space.
@@ -71,11 +72,11 @@ internal static class ManageStacksMenu
         void PromptHandler(string userInput)
         {
             var stackName = Stack.CreateSortName(userInput);
-            Stack? stack = Program.Stacks.Find(s => s.SortName == stackName);
+            var stack = dataAccess.GetStackListItemBySortNameAsync(stackName).Result;
             if (stack != null)
             {
-                ManageSingleStackMenu.Get(stack.Id).Show();
-                if (Program.Stacks.Count == 0)
+                ManageSingleStackMenu.Get(dataAccess, stack.Id).Show();
+                if (dataAccess.CountStacksAsync().Result == 0)
                 {
                     screen.SetPromptAction(null);
                 }
@@ -88,9 +89,9 @@ internal static class ManageStacksMenu
 
         screen.AddAction(ConsoleKey.F1, () =>
         {
-            CreateOrRenameStackMenu.Get().Show();
+            CreateOrRenameStackMenu.Get(dataAccess).Show();
 
-            if (Program.Stacks.Count > 0)
+            if (dataAccess.CountStacksAsync().Result > 0)
             {
                 screen.SetPromptAction(PromptHandler);
             }
@@ -115,7 +116,7 @@ internal static class ManageStacksMenu
         });
         screen.AddAction(ConsoleKey.Escape, screen.ExitScreen);
 
-        if (Program.Stacks.Count > 0)
+        if (dataAccess.CountStacksAsync().Result > 0)
         {
             screen.SetPromptAction(PromptHandler);
         }
@@ -123,27 +124,14 @@ internal static class ManageStacksMenu
         return screen;
     }
 
-    private static string GetStackList(int skip, int take)
+    private static string GetStackList(IDataAccess dataAccess, int skip, int take)
     {
         var sb = new StringBuilder();
         // TODO: Determine which sort order to use here.
-        foreach (Stack stack in Program.Stacks.Skip(skip).Take(take))
+        foreach (var stack in dataAccess.GetStackListAsync(take, skip).Result)
         {
-            sb.Append(stack.ViewName).Append('\t').Append(stack.Cards).Append('\t').AppendLine(GetLastStudyDate(stack));
+            sb.Append(stack.ViewName).Append('\t').Append(stack.Cards).Append('\t').AppendLine(stack.LastStudied?.ToString(Program.DateTimeFormat) ?? "(never)");
         }
         return sb.ToString();
-    }
-
-    private static string GetLastStudyDate(Stack stack)
-    {
-        var studySessions = Program.StudySessions.Where(s => s.Id == stack.Id);
-        if (studySessions.Any())
-        {
-            return studySessions.Max(s => s.StartedAt).ToString(Program.DateTimeFormat);
-        }
-        else
-        {
-            return "(never)";
-        }
     }
 }

@@ -51,6 +51,51 @@ public class MockDB : IDataAccess
         }
     }
 
+    public Task<StackListItem> GetStackListItemByIdAsync(int id)
+    {
+        var found = _stacks.Find(sr => sr.IdPK == id) ?? throw new ArgumentException($"No stack with ID {id} exists.");
+        var output = new StackListItem
+        {
+            Id = found.IdPK,
+            ViewName = found.ViewName,
+            Cards = _flashcards.Count(fr => fr.StackIdFK == found.IdPK),
+            LastStudied = _history.Find(h => h.StackIdFK == found.IdPK)?.StartedAt
+        };
+        return Task.FromResult(output);
+    }
+
+    public Task<StackListItem?> GetStackListItemBySortNameAsync(string sortName)
+    {
+        StackListItem? output = null;
+        var found = _stacks.Find(sr => sr.SortNameUQ == sortName);
+        if (found == null)
+        {
+            return Task.FromResult(output);
+        }
+        output = new StackListItem
+        {
+            Id = found.IdPK,
+            ViewName = found.ViewName,
+            Cards = _flashcards.Count(fr => fr.StackIdFK == found.IdPK),
+            LastStudied = _history.Find(h => h.StackIdFK == found.IdPK)?.StartedAt
+        };
+        return Task.FromResult<StackListItem?>(output);
+    }
+
+    public Task<StackListItem> GetStackListItemByFlashcardIdAsync(int flashcardId)
+    {
+        var flashcard = _flashcards.Find(fr => fr.IdPK == flashcardId) ?? throw new ArgumentException($"No flashcard with ID {flashcardId} exists.");
+        var found = _stacks.Find(sr => sr.IdPK == flashcard.StackIdFK) ?? throw new ApplicationException("Bad data: there's a flashcard with non-existant stack.");
+        var output = new StackListItem
+        {
+            Id = found.IdPK,
+            ViewName = found.ViewName,
+            Cards = _flashcards.Count(fr => fr.StackIdFK == found.IdPK),
+            LastStudied = _history.Find(h => h.StackIdFK == found.IdPK)?.StartedAt
+        };
+        return Task.FromResult(output);
+    }
+
     public Task CreateStackAsync(NewStack stack)
     {
         var newStack = new StacksRow(stack.SortName, stack.ViewName);
@@ -58,14 +103,69 @@ public class MockDB : IDataAccess
         return Task.CompletedTask;
     }
 
-    public Task<List<ExistingFlashcard>> GetFlashcardListAsync(int stackId)
+    public Task DeleteStackAsync(int stackId)
     {
-        var output = _flashcards.Where(fr => fr.StackIdFK == stackId).Select(fr => new ExistingFlashcard()
+        var found = _stacks.Find(sr => sr.IdPK == stackId) ?? throw new ArgumentException($"No stack with ID {stackId} exists.");
+        var flashcardsToRemove = _flashcards.FindAll(fr => fr.StackIdFK == stackId);
+        var historyRowsToRemove = _history.FindAll(hr => hr.StackIdFK == stackId);
+        _historyToFlashcard.RemoveAll(h2f => historyRowsToRemove.Any(hr => hr.IdPK == h2f.HistoryIdFK) || flashcardsToRemove.Any(fr => fr.IdPK == h2f.FlashcardIdFK));
+        _history.RemoveAll(hr => historyRowsToRemove.Any(h => h.IdPK == hr.IdPK));
+        _flashcards.RemoveAll(fr => flashcardsToRemove.Any(f => f.IdPK == fr.IdPK));
+        _stacks.Remove(found);
+        return Task.CompletedTask;
+    }
+
+    public Task RenameStackAsync(int oldStackId, NewStack updatedStack)
+    {
+        var found = _stacks.Find(sr => sr.IdPK == oldStackId) ?? throw new ArgumentException($"No stack with ID {oldStackId} exists.");
+        found.SortNameUQ = updatedStack.SortName;
+        found.ViewName = updatedStack.ViewName;
+        return Task.CompletedTask;
+    }
+
+    public Task<int> CountFlashcardsAsync(int stackId)
+    {
+        return Task.FromResult(_flashcards.Count(fr => fr.StackIdFK == stackId));
+    }
+
+    public Task<bool> CardInStack(int stackId, int flashcardId)
+    {
+        return Task.FromResult(_flashcards.Any(fr => fr.IdPK == flashcardId && fr.StackIdFK == stackId));
+    }
+
+    public Task<List<ExistingFlashcard>> GetFlashcardListAsync(int stackId, int? take = null, int skip = 0)
+    {
+        if (take == null)
         {
-            Id = fr.IdPK,
-            Front = fr.Front,
-            Back = fr.Back
-        }).ToList();
+            var output = _flashcards.Where(fr => fr.StackIdFK == stackId).Skip(skip).Select(fr => new ExistingFlashcard()
+            {
+                Id = fr.IdPK,
+                Front = fr.Front,
+                Back = fr.Back
+            }).ToList();
+            return Task.FromResult(output);
+        }
+        else
+        {
+            var output = _flashcards.Where(fr => fr.StackIdFK == stackId).Skip(skip).Take((int)take).Select(fr => new ExistingFlashcard()
+            {
+                Id = fr.IdPK,
+                Front = fr.Front,
+                Back = fr.Back
+            }).ToList();
+            return Task.FromResult(output);
+        }
+    }
+
+    public Task<ExistingFlashcard> GetFlashcardByIdAsync(int id)
+    {
+        var found = _flashcards.Find(fr => fr.IdPK == id) ?? throw new ArgumentException($"No flashcard with ID {id} exists.");
+        var output = new ExistingFlashcard()
+        {
+            Id = found.IdPK,
+            Front = found.Front,
+            Back = found.Back
+        };
         return Task.FromResult(output);
     }
 
@@ -97,13 +197,21 @@ public class MockDB : IDataAccess
         return Task.CompletedTask;
     }
 
+    public Task DeleteFlashcardAsync(int id)
+    {
+        var found = _flashcards.Find(fr => fr.IdPK == id) ?? throw new ArgumentException($"No flashcard with ID {id} exists.");
+        _historyToFlashcard.RemoveAll(h2f => h2f.FlashcardIdFK == id);
+        _flashcards.Remove(found);
+        return Task.CompletedTask;
+    }
+
     public Task<List<HistoryListItem>> GetHistoryListAsync()
     {
         var output = _history.ConvertAll(hr => new HistoryListItem()
         {
             Id = hr.IdPK,
             StartedAt = hr.StartedAt,
-            StackViewName = _stacks.Find(sr => sr.IdPK == hr.StackIdFK)?.ViewName ?? throw new ApplicationException("bad data: there's a history row with non-existant stack"),
+            StackViewName = _stacks.Find(sr => sr.IdPK == hr.StackIdFK)?.ViewName ?? throw new ApplicationException("Bad data: there's a history row with non-existant stack."),
             CardsStudied  = _historyToFlashcard.Count(h2f => h2f.HistoryIdFK == hr.IdPK),
             CorrectAnswers = _historyToFlashcard.Count(h2f => h2f.HistoryIdFK == hr.IdPK && h2f.WasCorrect)
         });

@@ -1,12 +1,13 @@
-﻿using TCSAHelper.Console;
+﻿using Flashcards.DataAccess;
+using TCSAHelper.Console;
 
 namespace Flashcards.UI;
 
 internal static class ManageSingleStackMenu
 {
-    public static Screen Get(int stackId)
+    public static Screen Get(IDataAccess dataAccess, int stackId)
     {
-        var stack = Program.Stacks.Find(s => s.Id == stackId) ?? throw new ArgumentException($"No stack with ID {stackId} exists.");
+        var stack = dataAccess.GetStackListItemByIdAsync(stackId).Result;
 
         var screen = new Screen(header: (_, _) => $"Manage Stack: {stack.ViewName}",
             body: (_, _) => @"1. [C]reate New Flashcards in Stack
@@ -15,19 +16,23 @@ internal static class ManageSingleStackMenu
 4. [D]elete Stack
 0. Go Back to [S]tacks Overview",
             footer: (_, _) => "Select by pressing a number or letter,\nor press [Esc] to go back.");
-        screen.AddAction(ConsoleKey.C, () => CreateOrEditFlashcard.Get(stackId).Show());
-        screen.AddAction(ConsoleKey.D1, () => CreateOrEditFlashcard.Get(stackId).Show());
+        screen.AddAction(ConsoleKey.C, () => CreateOrEditFlashcard.Get(dataAccess, stackId).Show());
+        screen.AddAction(ConsoleKey.D1, () => CreateOrEditFlashcard.Get(dataAccess, stackId).Show());
 
-        screen.AddAction(ConsoleKey.B, () => ManageFlashcardsMenu.Get(stack.Id).Show());
-        screen.AddAction(ConsoleKey.D2, () => ManageFlashcardsMenu.Get(stack.Id).Show());
+        screen.AddAction(ConsoleKey.B, () => ManageFlashcardsMenu.Get(dataAccess, stack.Id).Show());
+        screen.AddAction(ConsoleKey.D2, () => ManageFlashcardsMenu.Get(dataAccess, stack.Id).Show());
 
-        screen.AddAction(ConsoleKey.R, () => CreateOrRenameStackMenu.Get(stack.ViewName).Show());
-        screen.AddAction(ConsoleKey.D3, () => CreateOrRenameStackMenu.Get(stack.ViewName).Show());
+        void CreateOrRenameStack()
+        {
+            CreateOrRenameStackMenu.Get(dataAccess, stack!.ViewName).Show();
+            stack = dataAccess.GetStackListItemByIdAsync(stackId).Result;
+        }
+        screen.AddAction(ConsoleKey.R, CreateOrRenameStack);
+        screen.AddAction(ConsoleKey.D3, CreateOrRenameStack);
 
         void DeleteStack()
         {
-            Program.Flashcards.RemoveAll(f => f.Stack == stack);
-            Program.Stacks.Remove(stack);
+            dataAccess.DeleteStackAsync(stackId).Wait();
             screen.ExitScreen();
         }
         screen.AddAction(ConsoleKey.D, DeleteStack);

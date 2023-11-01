@@ -1,11 +1,13 @@
-﻿using Flashcards.Models;
+﻿using Flashcards.DataAccess;
+using Flashcards.DataAccess.DTOs;
+using Flashcards.Models;
 using TCSAHelper.Console;
 
 namespace Flashcards.UI;
 
 internal static class CreateOrRenameStackMenu
 {
-    public static Screen Get(string? oldViewName = null)
+    public static Screen Get(IDataAccess dataAccess, string? oldViewName = null)
     {
         string newStackMessage = string.Empty;
         string error = string.Empty;
@@ -32,62 +34,57 @@ internal static class CreateOrRenameStackMenu
             }
         });
         screen.AddAction(ConsoleKey.Escape, screen.ExitScreen);
-        screen.SetPromptAction((userInput) =>
+        screen.SetPromptAction((newViewName) =>
         {
-            if (string.IsNullOrEmpty(oldViewName))
+            var newSortName = Stack.CreateSortName(newViewName);
+            if (string.IsNullOrEmpty(newSortName))
             {
-                var newStack = new Stack(userInput);
-
-                var otherStack = Program.Stacks.Find(s => s.SortName == newStack.SortName);
+                error = "The stack name cannot be empty.\n\n";
+            }
+            else if (string.IsNullOrEmpty(oldViewName))
+            {
+                // Creating new stack.
+                var otherStack = dataAccess.GetStackListItemBySortNameAsync(newSortName).Result;
 
                 if (otherStack != null)
                 {
                     error = $"Your chosen stack name clashes with the existing stack \"{otherStack.ViewName}\".\n\n";
                 }
-                else if (string.IsNullOrEmpty(newStack.SortName))
-                {
-                    error = "The stack name cannot be empty.\n\n";
-                }
                 else
                 {
                     error = string.Empty;
-                    Program.Stacks.Add(newStack);
-                    newStack.Id = ++Program.CurrentStackId;
-                    newStackMessage = $"{newStack.ViewName}\n\nCreated stack \"{newStack.ViewName}\".";
+                    dataAccess.CreateStackAsync(new() { SortName = newSortName, ViewName = newViewName }).Wait();
+                    newStackMessage = $"{newViewName}\n\nCreated stack \"{newViewName}\".";
                     screen.SetPromptAction(null);
                     screen.SetAnyKeyAction(screen.ExitScreen);
                 }
             }
+            else if (newViewName == oldViewName)
+            {
+                // Renaming to same name.
+                error = string.Empty;
+                newStackMessage = $"{oldViewName}\n\nNo name change.";
+                screen.SetPromptAction(null);
+                screen.SetAnyKeyAction(screen.ExitScreen);
+            }
             else
             {
-                var newSortName = Stack.CreateSortName(userInput);
-                if (string.IsNullOrEmpty(newSortName))
+                // Renaming to different name.
+                var otherStack = dataAccess.GetStackListItemBySortNameAsync(newSortName).Result;
+                if (otherStack != null && otherStack.ViewName != oldViewName && Stack.CreateSortName(otherStack.ViewName) == newSortName)
                 {
-                    error = "The stack name cannot be empty.\n\n";
-                }
-                else if (userInput == oldViewName)
-                {
-                    error = string.Empty;
-                    newStackMessage = $"{oldViewName}\n\nNo name change.";
-                    screen.SetPromptAction(null);
-                    screen.SetAnyKeyAction(screen.ExitScreen);
+                    error = $"Your chosen stack name clashes with the existing stack \"{otherStack.ViewName}\".\n\n";
                 }
                 else
                 {
-                    var otherStack = Program.Stacks.Find(s => s.SortName == newSortName);
-                    if (otherStack != null && otherStack.SortName == newSortName && otherStack.ViewName != oldViewName)
-                    {
-                        error = $"Your chosen stack name clashes with the existing stack \"{otherStack.ViewName}\".\n\n";
-                    }
-                    else
-                    {
-                        error = string.Empty;
-                        var stack = Program.Stacks.Find(s => s.ViewName == oldViewName) ?? throw new InvalidOperationException($"No stack with name \"{oldViewName}\" exists.");
-                        stack.ViewName = userInput;
-                        newStackMessage = $"{stack.ViewName}\n\nRenamed stack \"{oldViewName}\" to \"{stack.ViewName}\".";
-                        screen.SetPromptAction(null);
-                        screen.SetAnyKeyAction(screen.ExitScreen);
-                    }
+                    error = string.Empty;
+                    var oldSortName = Stack.CreateSortName(oldViewName);
+                    var existingStack = dataAccess.GetStackListItemBySortNameAsync(oldSortName).Result ?? throw new InvalidOperationException($"No stack with name \"{oldViewName}\" exists.");
+                    NewStack updatedStack = new() { SortName = newSortName, ViewName = newViewName };
+                    dataAccess.RenameStackAsync(existingStack.Id, updatedStack).Wait();
+                    newStackMessage = $"{existingStack.ViewName}\n\nRenamed stack \"{oldViewName}\" to \"{updatedStack.ViewName}\".";
+                    screen.SetPromptAction(null);
+                    screen.SetAnyKeyAction(screen.ExitScreen);
                 }
             }
         });
