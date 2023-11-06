@@ -1,8 +1,9 @@
 ﻿using static TCSAHelper.Console.Utils;
 using TCSAHelper.Console;
-using System.Text;
 using Flashcards.Models;
 using Flashcards.DataAccess;
+using ConsoleTableExt;
+using System.Runtime.Serialization;
 
 namespace Flashcards.UI;
 
@@ -14,6 +15,8 @@ internal static class ManageStacksMenu
         // Actual footer height varies, but using a constant simplifies things (including for the user).
         const int footerHeight = Screen.FooterPadding + Screen.FooterSeparatorHeight + 4;
         const string promptText = "\nSelect a Stack: ";
+        const int constantListOverhead = 2;
+        const int perItemHeight = 2;
         const int promptHeight = 2;
         PaginationResult? paginationResult = null;
         int previouslyUsableHeight = -1;
@@ -28,7 +31,7 @@ internal static class ManageStacksMenu
                 skip = 0;
             }
             int heightAvailableToBody = usableHeight - (headerHeight + footerHeight);
-            paginationResult = DeterminePagination(heightAvailableToBody, dataAccess.CountStacksAsync().Result, perPageListHeightOverhead: promptHeight, skippedItems: skip);
+            paginationResult = DeterminePagination(heightAvailableToBody, dataAccess.CountStacksAsync().Result, heightPerItem: perItemHeight, perPageListHeightOverhead: constantListOverhead + promptHeight, skippedItems: skip);
             if (paginationResult.TotalPages > 1)
             {
                 return $"Manage Stacks (page {paginationResult.CurrentPage}/{paginationResult.TotalPages})";
@@ -37,12 +40,12 @@ internal static class ManageStacksMenu
             {
                 return "Manage Stacks";
             }
-        }, body: (_, _) =>
+        }, body: (usableWidth, _) =>
         {
             if (paginationResult!.TotalPages > 0)
             {
                 var take = paginationResult.ItemsPerPage;
-                return GetStackList(dataAccess, skip, take) + promptText;
+                return GetStackList(dataAccess, skip, take, usableWidth) + promptText;
             }
             else if (dataAccess.CountStacksAsync().Result > 0 && paginationResult!.TotalPages == 0)
             {
@@ -124,14 +127,18 @@ internal static class ManageStacksMenu
         return screen;
     }
 
-    private static string GetStackList(IDataAccess dataAccess, int skip, int take)
+    private static string GetStackList(IDataAccess dataAccess, int skip, int take, int usableWidth)
     {
-        var sb = new StringBuilder();
-        // TODO: Determine which sort order to use here.
-        foreach (var stack in dataAccess.GetStackListAsync(take, skip).Result)
-        {
-            sb.Append(stack.ViewName).Append('\t').Append(stack.Cards).Append('\t').AppendLine(stack.LastStudied?.ToString(Program.DateTimeFormat) ?? "(never)");
-        }
-        return sb.ToString();
+        // Table border decorations (inside and outside), padding around cell contents, plus enough space to print column headers and time format.
+        // E.g. "| name | cards | yyyy-MM-dd HH:mm:ss |".
+        int minListWidth = 2 + 4 + 3 + 5 + 3 + Program.DateTimeFormat.Length + 2;
+        int nameWidth = Math.Max(usableWidth - minListWidth, 4);
+        var tableData = dataAccess.GetStackListAsync(take, skip).Result
+            .ConvertAll(si => new List<object> { TCSAHelper.General.Utils.LimitWidth(si.ViewName, nameWidth), si.Cards, si.LastStudied?.ToString(Program.DateTimeFormat) ?? "(never)" })
+            ?? new List<List<object>>();
+        return ConsoleTableBuilder.From(tableData)
+            .AddColumn("name").AddColumn("cards").AddColumn("last studied")
+            .WithCharMapDefinition(CharMapDefinition.FramePipDefinition)
+            .Export().ToString();
     }
 }
