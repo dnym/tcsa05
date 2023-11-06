@@ -179,6 +179,7 @@ public class Screen
             }
             else
             {
+                // TODO: Handle default user input longer than window width.
                 System.Console.Write(userInput);
                 System.Console.SetCursorPosition(Math.Min(winWidth, bodyCursorLeft + userInputPosition), bodyCursorTop);
                 System.Console.CursorVisible = true;
