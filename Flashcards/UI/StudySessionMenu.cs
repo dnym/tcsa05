@@ -80,7 +80,7 @@ internal static class StudySessionMenu
             var stack = dataAccess.GetStackListItemBySortNameAsync(stackName).Result;
             if (stack != null)
             {
-                Console.WriteLine("StudyStackScreen.Get(dataAccess, stack.Id).Show();");
+                StudyStackScreen.Get(dataAccess, stack.Id, stack.ViewName).Show();
             }
             else
             {
