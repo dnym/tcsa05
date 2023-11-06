@@ -3,7 +3,6 @@ using TCSAHelper.Console;
 using Flashcards.Models;
 using Flashcards.DataAccess;
 using ConsoleTableExt;
-using System.Runtime.Serialization;
 
 namespace Flashcards.UI;
 
