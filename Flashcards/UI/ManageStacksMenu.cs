@@ -129,9 +129,7 @@ internal static class ManageStacksMenu
 
     private static string GetStackList(IDataAccess dataAccess, int skip, int take, int usableWidth)
     {
-        // Table border decorations (inside and outside), padding around cell contents, plus enough space to print column headers and time format.
-        // E.g. "| name | cards | yyyy-MM-dd HH:mm:ss |".
-        int minListWidth = 2 + 4 + 3 + 5 + 3 + Program.DateTimeFormat.Length + 2;
+        int minListWidth = $"| name | cards | {Program.DateTimeFormat.Length} |".Length;
         int nameWidth = Math.Max(usableWidth - minListWidth, 4);
         var tableData = dataAccess.GetStackListAsync(take, skip).Result
             .ConvertAll(si => new List<object> { TCSAHelper.General.Utils.LimitWidth(si.ViewName, nameWidth), si.Cards, si.LastStudied?.ToString(Program.DateTimeFormat) ?? "(never)" })
