@@ -1,9 +1,8 @@
 ﻿using static TCSAHelper.Console.Utils;
-using Flashcards.Models;
-using System.Text;
 using TCSAHelper.Console;
 using Flashcards.DataAccess;
 using Flashcards.DataAccess.DTOs;
+using ConsoleTableExt;
 
 namespace Flashcards.UI;
 
@@ -14,6 +13,8 @@ internal static class ManageFlashcardsMenu
         const int headerHeight = 1;
         const int footerHeight = Screen.FooterPadding + Screen.FooterSeparatorHeight + 3;
         const string promptText = "\nSelect a Flashcard: ";
+        const int constantListOverhead = 2;
+        const int perItemHeight = 2;
         const int promptHeight = 2;
         PaginationResult? paginationResult = null;
         int previouslyUsableHeight = -1;
@@ -41,7 +42,7 @@ internal static class ManageFlashcardsMenu
             }
 
             int heightAvailableToBody = usableHeight - (headerHeight + footerHeight);
-            paginationResult = DeterminePagination(heightAvailableToBody, flashcardsCount, perPageListHeightOverhead: promptHeight, skippedItems: skip);
+            paginationResult = DeterminePagination(heightAvailableToBody, flashcardsCount, heightPerItem: perItemHeight, perPageListHeightOverhead: constantListOverhead + promptHeight, skippedItems: skip);
             if (paginationResult.TotalPages > 1)
             {
                 return $"Manage Flashcards for {stack.ViewName} (page {paginationResult.CurrentPage}/{paginationResult.TotalPages})";
@@ -50,7 +51,7 @@ internal static class ManageFlashcardsMenu
             {
                 return $"Manage Flashcards for {stack.ViewName}";
             }
-        }, body: (_, _) =>
+        }, body: (usableWidth, _) =>
         {
             int flashcardsCount = dataAccess.CountFlashcardsAsync(stackId).Result;
 
@@ -58,7 +59,7 @@ internal static class ManageFlashcardsMenu
             {
                 var take = paginationResult!.ItemsPerPage;
                 flashcards = dataAccess.GetFlashcardListAsync(stackId, take, skip).Result;
-                return GetFlashcardList(flashcards) + promptText;
+                return GetFlashcardList(flashcards, usableWidth) + promptText;
             }
             else if (flashcardsCount > 0 && paginationResult!.TotalPages == 0)
             {
@@ -122,14 +123,23 @@ internal static class ManageFlashcardsMenu
         return screen;
     }
 
-    private static string GetFlashcardList(List<ExistingFlashcard> flashcards)
+    private static string GetFlashcardList(List<ExistingFlashcard> flashcards, int usableWidth)
     {
-        var sb = new StringBuilder();
+        int minListWidth = "| no. | front | back |".Length;
+        int sideWidth = Math.Max(usableWidth - minListWidth, 10) / 2;
+        var tableData = new List<List<object>>();
         for (int i = 0; i < flashcards.Count; i++)
         {
             var flashcard = flashcards[i];
-            sb.Append(i + 1).Append(": ").Append(flashcard.Front).Append(" -> ").AppendLine(flashcard.Back);
+            tableData.Add(new() {
+                i + 1,
+                TCSAHelper.General.Utils.LimitWidth(flashcard.Front, sideWidth),
+                TCSAHelper.General.Utils.LimitWidth(flashcard.Back, sideWidth)
+            });
         }
-        return sb.ToString();
+        return ConsoleTableBuilder.From(tableData)
+            .WithColumn("no.", "front", "back")
+            .WithCharMapDefinition(CharMapDefinition.FramePipDefinition)
+            .Export().ToString();
     }
 }
