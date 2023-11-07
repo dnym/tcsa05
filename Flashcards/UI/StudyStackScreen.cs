@@ -1,5 +1,6 @@
 ﻿using ConsoleTableExt;
 using Flashcards.DataAccess;
+using Flashcards.DataAccess.DTOs;
 using TCSAHelper.Console;
 
 namespace Flashcards.UI;
@@ -11,22 +12,24 @@ internal static class StudyStackScreen
         string header = $"Studying Stack: {stackName}";
         var flashcards = dataAccess.GetFlashcardListAsync(stackId).Result ?? new();
         Random rnd = new();
-        DataAccess.DTOs.ExistingFlashcard? flashcard = null;
+        ExistingFlashcard? currentFlashcard = null;
         if (flashcards.Count > 0)
         {
-            flashcard = flashcards[rnd.Next(flashcards.Count)];
+            currentFlashcard = flashcards[rnd.Next(flashcards.Count)];
         }
         string? userAnswer = null;
+
+        NewHistory sessionHistory = new() { StackId = stackId, StartedAt = DateTime.UtcNow };
 
         var screen = new Screen(header: (_, _) => header,
             body: (usableWidth, _) =>
             {
                 int maxWidth = usableWidth - 2;
-                if (flashcard != null)
+                if (currentFlashcard != null)
                 {
                     var tableData = new List<List<object>>
                     {
-                        new List<object>() { TCSAHelper.General.Utils.LimitWidth(flashcard.Front.Replace("\\n", "\n"), maxWidth) }
+                        new List<object>() { TCSAHelper.General.Utils.LimitWidth(currentFlashcard.Front.Replace("\\n", "\n"), maxWidth) }
                     };
                     string prompt;
                     if (userAnswer == null)
@@ -36,8 +39,8 @@ internal static class StudyStackScreen
                     }
                     else
                     {
-                        tableData.Add(new List<object>() { TCSAHelper.General.Utils.LimitWidth(flashcard.Back.Replace("\\n", "\n"), maxWidth) });
-                        if (userAnswer == flashcard.Back)
+                        tableData.Add(new List<object>() { TCSAHelper.General.Utils.LimitWidth(currentFlashcard.Back.Replace("\\n", "\n"), maxWidth) });
+                        if (userAnswer == currentFlashcard.Back)
                         {
                             prompt = "\n\nYou were correct!";
                         }
@@ -68,26 +71,32 @@ internal static class StudyStackScreen
                 }
             });
 
-        screen.SetPromptAction((string userInput) =>
+        void CheckAnswer(string userInput)
         {
             userAnswer = userInput;
+            if (currentFlashcard != null)
+            {
+                var result = new CardStudyDTO() { FlashcardId = currentFlashcard.Id, AnsweredAt = DateTime.UtcNow, WasCorrect = userAnswer == currentFlashcard.Back };
+                sessionHistory.Results.Add(result);
+            }
             screen.SetPromptAction(null);
-        });
+        }
+        screen.SetPromptAction(CheckAnswer);
         screen.SetAnyKeyAction(() =>
         {
             if (userAnswer != null)
             {
-                flashcard = flashcards[rnd.Next(flashcards.Count)];
+                currentFlashcard = flashcards[rnd.Next(flashcards.Count)];
                 userAnswer = null;
-                screen.SetPromptAction((string userInput) =>
-                {
-                    userAnswer = userInput;
-                    screen.SetPromptAction(null);
-                });
+                screen.SetPromptAction(CheckAnswer);
             }
         });
 
-        screen.AddAction(ConsoleKey.Escape, screen.ExitScreen);
+        screen.AddAction(ConsoleKey.Escape, () =>
+        {
+            dataAccess.AddHistoryAsync(sessionHistory).Wait();
+            screen.ExitScreen();
+        });
 
         return screen;
     }
