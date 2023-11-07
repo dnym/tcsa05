@@ -94,7 +94,10 @@ internal static class StudyStackScreen
 
         screen.AddAction(ConsoleKey.Escape, () =>
         {
+            if (sessionHistory.Results.Count > 0)
+            {
             dataAccess.AddHistoryAsync(sessionHistory).Wait();
+            }
             screen.ExitScreen();
         });
 
