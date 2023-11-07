@@ -13,7 +13,7 @@ internal static class StudyHistoryMenu
         const int headerHeight = 1;
         const int footerHeight = Screen.FooterPadding + Screen.FooterSeparatorHeight + 3;
         const string promptText = "\nSelect a Session: ";
-        const int constantListOverhead = 2;
+        const int constantListOverhead = 3;
         const int perItemHeight = 2;
         const int promptHeight = 2;
         PaginationResult? paginationResult = null;
@@ -50,11 +50,15 @@ internal static class StudyHistoryMenu
             }
         }, body: (_, _) =>
         {
-            if (historyCount > 0)
+            if (paginationResult!.TotalPages > 0)
             {
                 var take = paginationResult!.ItemsPerPage;
                 var historyList = dataAccess.GetHistoryListAsync(take, skip).Result;
                 return ListToString(historyList) + promptText;
+            }
+            else if (historyCount > 0)
+            {
+                return "Window is too small to show study history.";
             }
             else
             {
@@ -62,7 +66,21 @@ internal static class StudyHistoryMenu
             }
         }, footer: (_, _) =>
         {
-            return "Press ...[Esc] to go back.";
+            var footerText = "Press ";
+            if (paginationResult!.CurrentPage > 1)
+            {
+                footerText += "[PgUp] to go to the previous page,\n";
+            }
+            if (paginationResult!.CurrentPage < paginationResult.TotalPages)
+            {
+                footerText += "[PgDown] to go to the next page,\n";
+            }
+            if (footerText.Length > 6)
+            {
+                footerText += "or ";
+            }
+            footerText += "[Esc] to go back.";
+            return footerText;
         });
 
         if (historyCount > 0)

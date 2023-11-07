@@ -13,7 +13,7 @@ internal static class ManageFlashcardsMenu
         const int headerHeight = 1;
         const int footerHeight = Screen.FooterPadding + Screen.FooterSeparatorHeight + 3;
         const string promptText = "\nSelect a Flashcard: ";
-        const int constantListOverhead = 2;
+        const int constantListOverhead = 3;
         const int perItemHeight = 2;
         const int promptHeight = 2;
         PaginationResult? paginationResult = null;
@@ -55,13 +55,13 @@ internal static class ManageFlashcardsMenu
         {
             int flashcardsCount = dataAccess.CountFlashcardsAsync(stackId).Result;
 
-            if (flashcardsCount > 0)
+            if (paginationResult!.TotalPages > 0)
             {
                 var take = paginationResult!.ItemsPerPage;
                 flashcards = dataAccess.GetFlashcardListAsync(stackId, take, skip).Result;
                 return GetFlashcardList(flashcards, usableWidth) + promptText;
             }
-            else if (flashcardsCount > 0 && paginationResult!.TotalPages == 0)
+            else if (flashcardsCount > 0)
             {
                 return "Window is too small to list any flashcards.";
             }

@@ -14,7 +14,7 @@ internal static class ManageStacksMenu
         // Actual footer height varies, but using a constant simplifies things (including for the user).
         const int footerHeight = Screen.FooterPadding + Screen.FooterSeparatorHeight + 4;
         const string promptText = "\nSelect a Stack: ";
-        const int constantListOverhead = 2;
+        const int constantListOverhead = 3;
         const int perItemHeight = 2;
         const int promptHeight = 2;
         PaginationResult? paginationResult = null;
@@ -46,7 +46,7 @@ internal static class ManageStacksMenu
                 var take = paginationResult.ItemsPerPage;
                 return GetStackList(dataAccess, skip, take, usableWidth) + promptText;
             }
-            else if (dataAccess.CountStacksAsync().Result > 0 && paginationResult!.TotalPages == 0)
+            else if (dataAccess.CountStacksAsync().Result > 0)
             {
                 // Note that this may actually not be true due to reserving space for PageUp and PageDown hints.
                 // TODO: Consider whether always printing the PageUp and PageDown hints, to not annoy the user by refusing to print items when there is space.

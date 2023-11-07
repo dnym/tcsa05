@@ -12,14 +12,16 @@ internal static class StudySessionMenu
     {
         const int headerHeight = 1;
         // Actual footer height varies, but using a constant simplifies things (including for the user).
-        const int footerHeight = Screen.FooterPadding + Screen.FooterSeparatorHeight + 4;
+        const int footerHeight = Screen.FooterPadding + Screen.FooterSeparatorHeight + 3;
         const string promptText = "\nSelect a Stack: ";
-        const int constantListOverhead = 2;
+        const int constantListOverhead = 3;
         const int perItemHeight = 2;
         const int promptHeight = 2;
         PaginationResult? paginationResult = null;
         int previouslyUsableHeight = -1;
         int skip = 0;
+
+        int stackCount = dataAccess.CountStacksAsync().Result;
 
         Screen screen = new(header: (_, usableHeight) =>
         {
@@ -30,7 +32,7 @@ internal static class StudySessionMenu
                 skip = 0;
             }
             int heightAvailableToBody = usableHeight - (headerHeight + footerHeight);
-            paginationResult = DeterminePagination(heightAvailableToBody, dataAccess.CountStacksAsync().Result, heightPerItem: perItemHeight, perPageListHeightOverhead: constantListOverhead + promptHeight, skippedItems: skip);
+            paginationResult = DeterminePagination(heightAvailableToBody, stackCount, heightPerItem: perItemHeight, perPageListHeightOverhead: constantListOverhead + promptHeight, skippedItems: skip);
             if (paginationResult.TotalPages > 1)
             {
                 return $"Study a Stack (page {paginationResult.CurrentPage}/{paginationResult.TotalPages})";
@@ -46,7 +48,7 @@ internal static class StudySessionMenu
                 var take = paginationResult.ItemsPerPage;
                 return GetStackList(dataAccess, skip, take, usableWidth) + promptText;
             }
-            else if (dataAccess.CountStacksAsync().Result > 0 && paginationResult!.TotalPages == 0)
+            else if (stackCount > 0)
             {
                 // Note that this may actually not be true due to reserving space for PageUp and PageDown hints.
                 // TODO: Consider whether always printing the PageUp and PageDown hints, to not annoy the user by refusing to print items when there is space.
@@ -104,7 +106,7 @@ internal static class StudySessionMenu
         });
         screen.AddAction(ConsoleKey.Escape, screen.ExitScreen);
 
-        if (dataAccess.CountStacksAsync().Result > 0)
+        if (stackCount > 0)
         {
             screen.SetPromptAction(PromptHandler);
         }
