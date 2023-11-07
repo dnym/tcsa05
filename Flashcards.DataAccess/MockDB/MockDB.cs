@@ -205,7 +205,12 @@ public class MockDB : IDataAccess
         return Task.CompletedTask;
     }
 
-    public Task<List<HistoryListItem>> GetHistoryListAsync()
+    public Task<int> CountHistoryAsync()
+    {
+        return Task.FromResult(_history.Count);
+    }
+
+    public Task<List<HistoryListItem>> GetHistoryListAsync(int? take = null, int skip = 0)
     {
         var output = _history.ConvertAll(hr => new HistoryListItem()
         {
@@ -215,7 +220,14 @@ public class MockDB : IDataAccess
             CardsStudied  = _historyToFlashcard.Count(h2f => h2f.HistoryIdFK == hr.IdPK),
             CorrectAnswers = _historyToFlashcard.Count(h2f => h2f.HistoryIdFK == hr.IdPK && h2f.WasCorrect)
         });
-        return Task.FromResult(output);
+        if (take != null)
+        {
+            return Task.FromResult(output.Skip(skip).Take((int)take).ToList());
+        }
+        else
+        {
+            return Task.FromResult(output.Skip(skip).ToList());
+        }
     }
 
     public Task AddHistoryAsync(NewHistory history)

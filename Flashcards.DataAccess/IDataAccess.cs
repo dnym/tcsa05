@@ -23,6 +23,7 @@ public interface IDataAccess
     Task MoveFlashcardAsync(int flashcardId, int newStackId);
     Task DeleteFlashcardAsync(int id);
 
-    Task<List<HistoryListItem>> GetHistoryListAsync();
+    Task<int> CountHistoryAsync();
+    Task<List<HistoryListItem>> GetHistoryListAsync(int? take = null, int skip = 0);
     Task AddHistoryAsync(NewHistory history);
 }
