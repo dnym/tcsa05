@@ -8,11 +8,11 @@ public static class Utils
         public int TotalPages { get; set; }
     }
 
-    private static readonly PaginationResult PaginationErrorResult = new() { ItemsPerPage = 0, CurrentPage = 0, TotalPages = 0 };
+    private static readonly PaginationResult _paginationErrorResult = new() { ItemsPerPage = 0, CurrentPage = 0, TotalPages = 0 };
 
     public static PaginationResult DeterminePagination(int heightAvailableToList, int listLength, int heightPerItem = 1, int perPageListHeightOverhead = 0, int skippedItems = 0)
     {
-        if (heightAvailableToList < 1) return PaginationErrorResult;
+        if (heightAvailableToList < 1) return _paginationErrorResult;
         if (listLength < 0) throw new ArgumentException("List length must be a non-negative number.");
         if (heightPerItem < 1) throw new ArgumentException("Height per item must be a positive number.");
         if (perPageListHeightOverhead < 0) throw new ArgumentException("Per page list height overhead must be a non-negative number.");
