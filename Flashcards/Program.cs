@@ -87,10 +87,10 @@ internal static class Program
                     new Tuple<string, string>("snake", "Schlange"),
                     new Tuple<string, string>("worm", "Wurm"),
                     new Tuple<string, string>("tree", "Baum"),
-                    new Tuple<string, string>("forest", "Forst, Wald"),
+                    new Tuple<string, string>("forest", "Forst"),
                     new Tuple<string, string>("stick", "Stock"),
-                    new Tuple<string, string>("fruit", "Frucht, Obst"),
-                    new Tuple<string, string>("seed", "Samen, Saat"),
+                    new Tuple<string, string>("fruit", "Frucht"),
+                    new Tuple<string, string>("seed", "Samen"),
                     new Tuple<string, string>("leaf", "Blatt"),
                     new Tuple<string, string>("root", "Wurzel")
                 }
@@ -172,7 +172,7 @@ internal static class Program
                     new Tuple<string, string>("to laugh", "rideo"),
                     new Tuple<string, string>("to see", "video"),
                     new Tuple<string, string>("to hear", "audio"),
-                    new Tuple<string, string>("to know", "scio ")
+                    new Tuple<string, string>("to know", "scio")
                 }
             },
             {
