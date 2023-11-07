@@ -63,6 +63,8 @@
   - Yes.
 - What if SQL Server doesn't work? E.g. can't create tables, or read, or write.
   - Give an error and exit.
+- What should happen if a flashcard is moved to another stack?
+  - >When a flashcard is moved to another stack, and that other stack is not deleted, the study history should remain unchanged. The numbers in the study history should only be affected if the flashcard is deleted or if the stack containing the flashcard is deleted.
 
 ## MVP Functionality
 
