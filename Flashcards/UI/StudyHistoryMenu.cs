@@ -21,6 +21,7 @@ internal static class StudyHistoryMenu
         int skip = 0;
 
         var historyCount = dataAccess.CountHistoryAsync().Result;
+        List<HistoryListItem> historyList = new();
 
         var screen = new Screen(header: (_, usableHeight) =>
         {
@@ -53,7 +54,7 @@ internal static class StudyHistoryMenu
             if (paginationResult!.TotalPages > 0)
             {
                 var take = paginationResult!.ItemsPerPage;
-                var historyList = dataAccess.GetHistoryListAsync(take, skip).Result;
+                historyList = dataAccess.GetHistoryListAsync(take, skip).Result;
                 return ListToString(historyList) + promptText;
             }
             else if (historyCount > 0)
@@ -87,6 +88,15 @@ internal static class StudyHistoryMenu
         {
             screen.SetPromptAction((userInput) =>
             {
+                if (int.TryParse(userInput, out int historyListNumber) && historyListNumber > 0 && historyListNumber <= historyList.Count)
+                {
+                    var historyListItem = historyList[historyListNumber - 1];
+                    Console.Write(historyListItem.StackViewName);
+                }
+                else
+                {
+                    Console.Beep();
+                }
             });
         }
 
