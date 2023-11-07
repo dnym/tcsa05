@@ -25,28 +25,32 @@ public class MockDB : IDataAccess
         return Task.FromResult(_stacks.Any(sr => sr.SortNameUQ == sortName));
     }
 
+    private StackListItem RowToStackListItem(StacksRow sr)
+    {
+        DateTime? lastStudied = null;
+        if (_history.Any(hr => hr.StackIdFK == sr.IdPK))
+        {
+            lastStudied = _history.Where(hr => hr.StackIdFK == sr.IdPK).Max(hr => hr.StartedAt);
+        }
+        return new StackListItem()
+        {
+            Id = sr.IdPK,
+            ViewName = sr.ViewName,
+            Cards = _flashcards.Count(fr => fr.StackIdFK == sr.IdPK),
+            LastStudied = lastStudied
+        };
+    }
+
     public Task<List<StackListItem>> GetStackListAsync(int? take = null, int skip = 0)
     {
         if (take == null)
         {
-            var output = _stacks.Skip(skip).Select(sr => new StackListItem()
-            {
-                Id = sr.IdPK,
-                ViewName = sr.ViewName,
-                Cards = _flashcards.Count(fr => fr.StackIdFK == sr.IdPK),
-                LastStudied = _history.Find(h => h.StackIdFK == sr.IdPK)?.StartedAt
-            }).ToList();
+            var output = _stacks.Skip(skip).Select(sr => RowToStackListItem(sr)).ToList();
             return Task.FromResult(output);
         }
         else
         {
-            var output = _stacks.Skip(skip).Take((int)take).Select(sr => new StackListItem()
-            {
-                Id = sr.IdPK,
-                ViewName = sr.ViewName,
-                Cards = _flashcards.Count(fr => fr.StackIdFK == sr.IdPK),
-                LastStudied = _history.Find(h => h.StackIdFK == sr.IdPK)?.StartedAt
-            }).ToList();
+            var output = _stacks.Skip(skip).Take((int)take).Select(sr => RowToStackListItem(sr)).ToList();
             return Task.FromResult(output);
         }
     }
@@ -54,13 +58,7 @@ public class MockDB : IDataAccess
     public Task<StackListItem> GetStackListItemByIdAsync(int id)
     {
         var found = _stacks.Find(sr => sr.IdPK == id) ?? throw new ArgumentException($"No stack with ID {id} exists.");
-        var output = new StackListItem
-        {
-            Id = found.IdPK,
-            ViewName = found.ViewName,
-            Cards = _flashcards.Count(fr => fr.StackIdFK == found.IdPK),
-            LastStudied = _history.Find(h => h.StackIdFK == found.IdPK)?.StartedAt
-        };
+        var output = RowToStackListItem(found);
         return Task.FromResult(output);
     }
 
@@ -72,13 +70,7 @@ public class MockDB : IDataAccess
         {
             return Task.FromResult(output);
         }
-        output = new StackListItem
-        {
-            Id = found.IdPK,
-            ViewName = found.ViewName,
-            Cards = _flashcards.Count(fr => fr.StackIdFK == found.IdPK),
-            LastStudied = _history.Find(h => h.StackIdFK == found.IdPK)?.StartedAt
-        };
+        output = RowToStackListItem(found);
         return Task.FromResult<StackListItem?>(output);
     }
 
@@ -86,13 +78,7 @@ public class MockDB : IDataAccess
     {
         var flashcard = _flashcards.Find(fr => fr.IdPK == flashcardId) ?? throw new ArgumentException($"No flashcard with ID {flashcardId} exists.");
         var found = _stacks.Find(sr => sr.IdPK == flashcard.StackIdFK) ?? throw new ApplicationException("Bad data: there's a flashcard with non-existant stack.");
-        var output = new StackListItem
-        {
-            Id = found.IdPK,
-            ViewName = found.ViewName,
-            Cards = _flashcards.Count(fr => fr.StackIdFK == found.IdPK),
-            LastStudied = _history.Find(h => h.StackIdFK == found.IdPK)?.StartedAt
-        };
+        var output = RowToStackListItem(found);
         return Task.FromResult(output);
     }
 
