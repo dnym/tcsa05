@@ -86,7 +86,15 @@ internal static class StudyStackScreen
         {
             if (userAnswer != null)
             {
-                currentFlashcard = flashcards[rnd.Next(flashcards.Count)];
+                var nextFlashcard = flashcards[rnd.Next(flashcards.Count)];
+                if (flashcards.Count > 1)
+                {
+                    while (nextFlashcard == currentFlashcard)
+                    {
+                        nextFlashcard = flashcards[rnd.Next(flashcards.Count)];
+                    }
+                }
+                currentFlashcard = nextFlashcard;
                 userAnswer = null;
                 screen.SetPromptAction(CheckAnswer);
             }
@@ -96,7 +104,7 @@ internal static class StudyStackScreen
         {
             if (sessionHistory.Results.Count > 0)
             {
-            dataAccess.AddHistoryAsync(sessionHistory).Wait();
+                dataAccess.AddHistoryAsync(sessionHistory).Wait();
             }
             screen.ExitScreen();
         });
