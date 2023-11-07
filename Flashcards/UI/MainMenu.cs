@@ -18,7 +18,7 @@ internal static class MainMenu
 
         void StudySession() => StudySessionMenu.Get(dataAccess).Show();
         void ManageStacks() => ManageStacksMenu.Get(dataAccess).Show();
-        void StudyHistory() => Console.WriteLine("StudyHistoryMenu.Get().Show()");
+        void StudyHistory() => StudyHistoryMenu.Get(dataAccess).Show();
 
         screen.AddAction(ConsoleKey.S, StudySession);
         screen.AddAction(ConsoleKey.D1, StudySession);
