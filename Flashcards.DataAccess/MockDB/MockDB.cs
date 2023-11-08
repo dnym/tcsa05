@@ -230,11 +230,11 @@ public class MockDB : IDataAccess
         });
         if (take != null)
         {
-            return Task.FromResult(output.Skip(skip).Take((int)take).ToList());
+            return Task.FromResult(output.Skip(skip).Take((int)take).OrderBy(r => r.StartedAt).ToList());
         }
         else
         {
-            return Task.FromResult(output.Skip(skip).ToList());
+            return Task.FromResult(output.Skip(skip).OrderBy(r => r.StartedAt).ToList());
         }
     }
 
