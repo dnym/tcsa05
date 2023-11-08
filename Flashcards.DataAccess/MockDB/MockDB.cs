@@ -175,6 +175,28 @@ public class MockDB : IDataAccess
 
     public Task MoveFlashcardAsync(int flashcardId, int newStackId)
     {
+        // Care must be taken to keep the history correct. Thus, a new history row must be created with the same study date as the old one.
+        // But first we check for any existing history rows for the new stack with the same date and time. If there are any, we use that one instead.
+        IEnumerable<HistoryRow> oldHistoryRows = _history.Where(hr => _historyToFlashcard.Where(h2f => h2f.FlashcardIdFK == flashcardId).Select(h2f => h2f.HistoryIdFK).Distinct().Contains(hr.IdPK)).ToList();
+        foreach (HistoryRow oldHistoryRow in oldHistoryRows)
+        {
+            var newHistoryRow = _history.Find(hr => hr.StackIdFK == newStackId && hr.StartedAt == oldHistoryRow.StartedAt) ?? new HistoryRow(newStackId, oldHistoryRow.StartedAt);
+            List<HistoryToFlashcardRow> oldResultRows = _historyToFlashcard.Where(h2f => h2f.HistoryIdFK == oldHistoryRow.IdPK && h2f.FlashcardIdFK == flashcardId).ToList();
+            foreach (HistoryToFlashcardRow oldResultRow in oldResultRows)
+            {
+                var newResultRow = new HistoryToFlashcardRow(newHistoryRow.IdPK, oldResultRow.FlashcardIdFK, oldResultRow.WasCorrect, oldResultRow.AnsweredAt);
+                _historyToFlashcard.Add(newResultRow);
+            }
+            _historyToFlashcard.RemoveAll(h2f => oldResultRows.Contains(h2f));
+            if (!_history.Contains(newHistoryRow))
+            {
+                _history.Add(newHistoryRow);
+            }
+            if (!_historyToFlashcard.Any(h2f => h2f.HistoryIdFK == oldHistoryRow.IdPK))
+            {
+                _history.Remove(oldHistoryRow);
+            }
+        }
         var found = _flashcards.Find(fr => fr.IdPK == flashcardId);
         if (found != null && _stacks.Any(sr => sr.IdPK == newStackId))
         {
