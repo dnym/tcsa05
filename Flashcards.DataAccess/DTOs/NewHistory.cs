@@ -4,5 +4,5 @@ public class NewHistory
 {
     public DateTime StartedAt { get; set; }
     public int StackId { get; set; }
-    public List<CardStudyDTO> Results { get; set; } = new();
+    public List<NewStudyResult> Results { get; set; } = new();
 }

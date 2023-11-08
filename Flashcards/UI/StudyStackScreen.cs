@@ -76,7 +76,7 @@ internal static class StudyStackScreen
             userAnswer = userInput;
             if (currentFlashcard != null)
             {
-                var result = new CardStudyDTO() { FlashcardId = currentFlashcard.Id, AnsweredAt = DateTime.UtcNow, WasCorrect = userAnswer == currentFlashcard.Back };
+                var result = new NewStudyResult() { FlashcardId = currentFlashcard.Id, AnsweredAt = DateTime.UtcNow, WasCorrect = userAnswer == currentFlashcard.Back };
                 sessionHistory.Results.Add(result);
             }
             screen.SetPromptAction(null);
