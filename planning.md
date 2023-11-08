@@ -65,6 +65,8 @@
   - Give an error and exit.
 - What should happen if a flashcard is moved to another stack?
   - >When a flashcard is moved to another stack, and that other stack is not deleted, the study history should remain unchanged. The numbers in the study history should only be affected if the flashcard is deleted or if the stack containing the flashcard is deleted.
+  - So if I move a card from the "Japanese" stack to the "Chinese" stack, it would still show that the user studied 10 Japanese cards? They were Japanese cards at the time, but now one of then count as a Chinese card.
+    - >In this scenario, if a Japanese card is moved to the "Chinese" stack, it should be reflected in the study history as studying 9 Japanese cards and 1 Chinese card. The study history should accurately represent the cards that were part of the study session, including their current stack affiliation.
 
 ## MVP Functionality
 
