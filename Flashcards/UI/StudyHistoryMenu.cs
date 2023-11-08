@@ -128,7 +128,7 @@ internal static class StudyHistoryMenu
             tableData.Add(new List<object>()
             {
                 (i + 1).ToString(),
-                listItem.StartedAt.ToString(Program.DateTimeFormat),
+                listItem.StartedAt.ToLocalTime().ToString(Program.DateTimeFormat),
                 listItem.StackViewName,
                 listItem.CardsStudied,
                 $"{listItem.CorrectAnswers}/{listItem.CardsStudied}"

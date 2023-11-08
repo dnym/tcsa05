@@ -131,7 +131,7 @@ internal static class ManageStacksMenu
         int minListWidth = $"| name | cards | {Program.DateTimeFormat.Length} |".Length;
         int nameWidth = Math.Max(usableWidth - minListWidth, 4);
         var tableData = dataAccess.GetStackListAsync(take, skip).Result
-            .ConvertAll(si => new List<object> { TCSAHelper.General.Utils.LimitWidth(si.ViewName, nameWidth), si.Cards, si.LastStudied?.ToString(Program.DateTimeFormat) ?? "(never)" })
+            .ConvertAll(si => new List<object> { TCSAHelper.General.Utils.LimitWidth(si.ViewName, nameWidth), si.Cards, si.LastStudied?.ToLocalTime().ToString(Program.DateTimeFormat) ?? "(never)" })
             ?? new List<List<object>>();
         return ConsoleTableBuilder.From(tableData)
             .AddColumn("name").AddColumn("cards").AddColumn("last studied")
