@@ -13,6 +13,7 @@ public class Screen
     private Action<string>? _promptHandling;
     private bool _stayInScreen;
     private string? _defaultUserInput;
+    private readonly char[] _wordSeparators = { ' ', '.', ',', ':', ';', '!', '?', '\n', '\t' };
 
     public Action ExitScreen => () => _stayInScreen = false;
     public const int HeaderSeparatorHeight = 1;
@@ -198,92 +199,130 @@ public class Screen
                         // This section handles the user's cursor movement and text editing.
                         int newCursorLeft = bodyCursorLeft;
                         int newCursorTop = bodyCursorTop;
-                        switch (pressedKey)
+                        if (pressedKeyInfo.Modifiers == ConsoleModifiers.Control && pressedKeyInfo.KeyChar == '\0')
                         {
-                            // TODO: Ctrl+Left/Right to move by words.
-                            case ConsoleKey.Enter:
-                                _promptHandling(userInput);
-                                userInput = "";
-                                userInputPosition = 0;
-                                takeInput = false;
-                                break;
-                            case ConsoleKey.Home:
-                                userInputPosition = 0;
-                                newCursorLeft = bodyCursorLeft;
-                                newCursorTop = bodyCursorTop;
-                                break;
-                            case ConsoleKey.End:
-                                userInputPosition = userInput.Length;
-                                newCursorLeft = bodyCursorLeft + userInputPosition;
-                                newCursorTop = bodyCursorTop;
-                                break;
-                            case ConsoleKey.UpArrow:
-                            case ConsoleKey.LeftArrow:
-                                userInputPosition = Math.Max(0, userInputPosition - 1);
-                                newCursorLeft = bodyCursorLeft + userInputPosition;
-                                newCursorTop = bodyCursorTop;
-                                break;
-                            case ConsoleKey.DownArrow:
-                            case ConsoleKey.RightArrow:
-                                userInputPosition = Math.Min(userInput.Length, userInputPosition + 1);
-                                newCursorLeft = bodyCursorLeft + userInputPosition;
-                                newCursorTop = bodyCursorTop;
-                                break;
-                            case ConsoleKey.Delete:
-                                if (userInputPosition < userInput.Length)
-                                {
-                                    userInput = userInput.Remove(userInputPosition, 1);
-                                    var currentCursorLeft = bodyCursorLeft + userInputPosition;
-                                    if (currentCursorLeft < winWidth)
+                            switch (pressedKey)
+                            {
+                                case ConsoleKey.LeftArrow:
+                                    if (userInputPosition > 0)
                                     {
-                                        System.Console.SetCursorPosition(currentCursorLeft, System.Console.CursorTop);
-                                        Utils.ClearRestOfLine();
-                                        var inputLimit = winWidth - currentCursorLeft;
-                                        var restOfInput = userInput[userInputPosition..];
-                                        restOfInput = restOfInput[..Math.Min(restOfInput.Length, inputLimit)];
-                                        System.Console.Write(restOfInput);
+                                        userInputPosition = userInput[0..(userInputPosition - 1)].LastIndexOfAny(_wordSeparators) + 1;
+                                        newCursorLeft = bodyCursorLeft + userInputPosition;
+                                        newCursorTop = bodyCursorTop;
                                     }
+                                    break;
+                                case ConsoleKey.RightArrow:
+                                    if (userInputPosition < userInput.Length)
+                                    {
+                                        int offset = userInput[userInputPosition..].IndexOfAny(_wordSeparators);
+                                        if (offset < 0)
+                                        {
+                                            userInputPosition = userInput.Length;
+                                        }
+                                        else
+                                        {
+                                            userInputPosition = userInputPosition + offset + 1;
+                                        }
+                                        newCursorLeft = bodyCursorLeft + userInputPosition;
+                                        newCursorTop = bodyCursorTop;
+                                    }
+                                    else
+                                    {
+                                        userInputPosition = userInput.Length;
+                                        newCursorLeft = bodyCursorLeft + userInputPosition;
+                                        newCursorTop = bodyCursorTop;
+                                    }
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            switch (pressedKey)
+                            {
+                                case ConsoleKey.Enter:
+                                    _promptHandling(userInput);
+                                    userInput = "";
+                                    userInputPosition = 0;
+                                    takeInput = false;
+                                    break;
+                                case ConsoleKey.Home:
+                                    userInputPosition = 0;
+                                    newCursorLeft = bodyCursorLeft;
+                                    newCursorTop = bodyCursorTop;
+                                    break;
+                                case ConsoleKey.End:
+                                    userInputPosition = userInput.Length;
                                     newCursorLeft = bodyCursorLeft + userInputPosition;
                                     newCursorTop = bodyCursorTop;
-                                }
-                                break;
-                            case ConsoleKey.Backspace:
-                                if (userInputPosition > 0)
-                                {
-                                    userInputPosition--;
-                                    userInput = userInput.Remove(userInputPosition, 1);
-                                    var currentCursorLeft = bodyCursorLeft + userInputPosition;
-                                    if (currentCursorLeft < winWidth)
-                                    {
-                                        System.Console.SetCursorPosition(currentCursorLeft, System.Console.CursorTop);
-                                        Utils.ClearRestOfLine();
-                                        var inputLimit = winWidth - currentCursorLeft;
-                                        var restOfInput = userInput[userInputPosition..];
-                                        restOfInput = restOfInput[..Math.Min(restOfInput.Length, inputLimit)];
-                                        System.Console.Write(restOfInput);
-                                    }
+                                    break;
+                                case ConsoleKey.UpArrow:
+                                case ConsoleKey.LeftArrow:
+                                    userInputPosition = Math.Max(0, userInputPosition - 1);
                                     newCursorLeft = bodyCursorLeft + userInputPosition;
                                     newCursorTop = bodyCursorTop;
-                                }
-                                break;
-                            default:
-                                {
-                                    userInput = userInput.Insert(userInputPosition, $"{pressedKeyInfo.KeyChar}");
-                                    userInputPosition++;
-                                    var currentCursorLeft = bodyCursorLeft + userInputPosition;
-                                    if (currentCursorLeft < winWidth)
-                                    {
-                                        System.Console.Write(pressedKeyInfo.KeyChar);
-                                        Utils.ClearRestOfLine();
-                                        var inputLimit = winWidth - currentCursorLeft;
-                                        var restOfInput = userInput[userInputPosition..];
-                                        restOfInput = restOfInput[..Math.Min(restOfInput.Length, inputLimit)];
-                                        System.Console.Write(restOfInput);
-                                    }
+                                    break;
+                                case ConsoleKey.DownArrow:
+                                case ConsoleKey.RightArrow:
+                                    userInputPosition = Math.Min(userInput.Length, userInputPosition + 1);
                                     newCursorLeft = bodyCursorLeft + userInputPosition;
                                     newCursorTop = bodyCursorTop;
-                                }
-                                break;
+                                    break;
+                                case ConsoleKey.Delete:
+                                    if (userInputPosition < userInput.Length)
+                                    {
+                                        userInput = userInput.Remove(userInputPosition, 1);
+                                        var currentCursorLeft = bodyCursorLeft + userInputPosition;
+                                        if (currentCursorLeft < winWidth)
+                                        {
+                                            System.Console.SetCursorPosition(currentCursorLeft, System.Console.CursorTop);
+                                            Utils.ClearRestOfLine();
+                                            var inputLimit = winWidth - currentCursorLeft;
+                                            var restOfInput = userInput[userInputPosition..];
+                                            restOfInput = restOfInput[..Math.Min(restOfInput.Length, inputLimit)];
+                                            System.Console.Write(restOfInput);
+                                        }
+                                        newCursorLeft = bodyCursorLeft + userInputPosition;
+                                        newCursorTop = bodyCursorTop;
+                                    }
+                                    break;
+                                case ConsoleKey.Backspace:
+                                    if (userInputPosition > 0)
+                                    {
+                                        userInputPosition--;
+                                        userInput = userInput.Remove(userInputPosition, 1);
+                                        var currentCursorLeft = bodyCursorLeft + userInputPosition;
+                                        if (currentCursorLeft < winWidth)
+                                        {
+                                            System.Console.SetCursorPosition(currentCursorLeft, System.Console.CursorTop);
+                                            Utils.ClearRestOfLine();
+                                            var inputLimit = winWidth - currentCursorLeft;
+                                            var restOfInput = userInput[userInputPosition..];
+                                            restOfInput = restOfInput[..Math.Min(restOfInput.Length, inputLimit)];
+                                            System.Console.Write(restOfInput);
+                                        }
+                                        newCursorLeft = bodyCursorLeft + userInputPosition;
+                                        newCursorTop = bodyCursorTop;
+                                    }
+                                    break;
+                                default:
+                                    {
+                                        userInput = userInput.Insert(userInputPosition, $"{pressedKeyInfo.KeyChar}");
+                                        userInputPosition++;
+                                        var currentCursorLeft = bodyCursorLeft + userInputPosition;
+                                        if (currentCursorLeft < winWidth)
+                                        {
+                                            System.Console.Write(pressedKeyInfo.KeyChar);
+                                            Utils.ClearRestOfLine();
+                                            var inputLimit = winWidth - currentCursorLeft;
+                                            var restOfInput = userInput[userInputPosition..];
+                                            restOfInput = restOfInput[..Math.Min(restOfInput.Length, inputLimit)];
+                                            System.Console.Write(restOfInput);
+                                        }
+                                        newCursorLeft = bodyCursorLeft + userInputPosition;
+                                        newCursorTop = bodyCursorTop;
+                                    }
+                                    break;
+                            }
                         }
                         if (newCursorLeft < winWidth)
                         {
