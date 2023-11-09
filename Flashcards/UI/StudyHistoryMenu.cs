@@ -91,7 +91,7 @@ internal static class StudyHistoryMenu
                 if (int.TryParse(userInput, out int historyListNumber) && historyListNumber > 0 && historyListNumber <= historyList.Count)
                 {
                     var historyListItem = historyList[historyListNumber - 1];
-                    Console.Write(historyListItem.StackViewName);
+                    ViewStudyHistoryScreen.Get(dataAccess, historyListItem).Show();
                 }
                 else
                 {
