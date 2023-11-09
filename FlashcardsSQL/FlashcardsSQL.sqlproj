@@ -70,5 +70,9 @@
     <Build Include="dbo\Tables\Flashcard.sql" />
     <Build Include="dbo\Tables\History.sql" />
     <Build Include="dbo\Tables\StudyResult.sql" />
+    <Build Include="dbo\Stored Procedures\Stack_Create_tr.sql" />
+    <Build Include="dbo\Stored Procedures\Flashcard_Create_tr.sql" />
+    <Build Include="dbo\Stored Procedures\History_Create_tr.sql" />
+    <Build Include="dbo\Stored Procedures\StudyResult_Create_tr.sql" />
   </ItemGroup>
 </Project>
