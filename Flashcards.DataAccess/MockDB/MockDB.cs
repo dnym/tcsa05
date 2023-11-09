@@ -249,4 +249,26 @@ public class MockDB : IDataAccess
         }
         return Task.CompletedTask;
     }
+
+    public Task<List<ExistingStudyResult>> GetStudyResults(int historyId, int? take = null, int skip = 0)
+    {
+        List<HistoryToFlashcardRow> resultRows;
+
+        if (take != null)
+        {
+            resultRows = _historyToFlashcard.Where(h2f => h2f.HistoryIdFK == historyId).OrderBy(h2f => h2f.AnsweredAt).Skip(skip).Take((int)take).ToList();
+        }
+        else
+        {
+            resultRows = _historyToFlashcard.Where(h2f => h2f.HistoryIdFK == historyId).OrderBy(h2f => h2f.AnsweredAt).Skip(skip).ToList();
+        }
+
+        return Task.FromResult(resultRows.ConvertAll(r => new ExistingStudyResult()
+        {
+            Ordinal = resultRows.IndexOf(r) + 1,
+            Front = _flashcards.Find(f => f.IdPK == r.FlashcardIdFK)?.Front ?? throw new ApplicationException("Bad data: there's a study result row with non-existant flashcard."),
+            WasCorrect = r.WasCorrect,
+            AnsweredAt = r.AnsweredAt
+        }));
+    }
 }

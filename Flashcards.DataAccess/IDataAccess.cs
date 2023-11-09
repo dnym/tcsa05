@@ -26,4 +26,5 @@ public interface IDataAccess
     Task<int> CountHistoryAsync();
     Task<List<HistoryListItem>> GetHistoryListAsync(int? take = null, int skip = 0);
     Task AddHistoryAsync(NewHistory history);
+    Task<List<ExistingStudyResult>> GetStudyResults(int historyId, int? take = null, int skip = 0);
 }
