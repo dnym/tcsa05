@@ -116,7 +116,7 @@ internal static class StudySessionMenu
 
     private static string GetStackList(IDataAccess dataAccess, int skip, int take, int usableWidth)
     {
-        int minListWidth = $"| name | cards | {Program.DateTimeFormat.Length} |".Length;
+        int minListWidth = $"| name | cards | {Program.DateTimeFormat} |".Length;
         int nameWidth = Math.Max(usableWidth - minListWidth, 4);
         var tableData = dataAccess.GetStackListAsync(take, skip).Result
             .ConvertAll(si => new List<object> { TCSAHelper.General.Utils.LimitWidth(si.ViewName, nameWidth), si.Cards, si.LastStudied?.ToLocalTime().ToString(Program.DateTimeFormat) ?? "(never)" })
