@@ -75,10 +75,12 @@ internal static class StudyStackScreen
 
         void CheckAnswer(string userInput)
         {
-            userAnswer = userInput;
+            // TODO: Option for case-sensitive answers?
+            userAnswer = userInput.Trim().ToLower();
             if (currentFlashcard != null)
             {
-                var result = new NewStudyResult() { FlashcardId = currentFlashcard.Id, AnsweredAt = DateTime.UtcNow, WasCorrect = userAnswer == currentFlashcard.Back };
+                var solution = currentFlashcard.Back.Trim().ToLower();
+                var result = new NewStudyResult() { FlashcardId = currentFlashcard.Id, AnsweredAt = DateTime.UtcNow, WasCorrect = userAnswer == solution };
                 sessionHistory.Results.Add(result);
             }
             screen.SetPromptAction(null);
