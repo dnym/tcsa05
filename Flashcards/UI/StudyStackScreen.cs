@@ -29,6 +29,7 @@ internal static class StudyStackScreen
                 {
                     var tableData = new List<List<object>>
                     {
+                        // TODO: ConsoleTableExt doesn't support multiline cells.
                         new List<object>() { TCSAHelper.General.Utils.LimitWidth(currentFlashcard.Front.Replace("\\n", "\n"), maxWidth) }
                     };
                     string prompt;
@@ -39,6 +40,7 @@ internal static class StudyStackScreen
                     }
                     else
                     {
+                        // TODO: ConsoleTableExt doesn't support multiline cells.
                         tableData.Add(new List<object>() { TCSAHelper.General.Utils.LimitWidth(currentFlashcard.Back.Replace("\\n", "\n"), maxWidth) });
                         if (userAnswer == currentFlashcard.Back)
                         {
