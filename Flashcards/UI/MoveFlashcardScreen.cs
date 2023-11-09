@@ -1,5 +1,5 @@
-﻿using Flashcards.DataAccess;
-using Flashcards.Models;
+﻿using Flashcards.Core;
+using Flashcards.DataAccess;
 using TCSAHelper.Console;
 
 namespace Flashcards.UI;
@@ -16,7 +16,7 @@ internal static class MoveFlashcardScreen
         screen.AddAction(ConsoleKey.Escape, screen.ExitScreen);
         screen.SetPromptAction((userInput) =>
         {
-            var otherStackName = Stack.CreateSortName(userInput);
+            var otherStackName = StackManagement.CreateSortName(userInput);
             var otherStack = dataAccess.GetStackListItemBySortNameAsync(otherStackName).Result;
             if (string.IsNullOrEmpty(userInput))
             {

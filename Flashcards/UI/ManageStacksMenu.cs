@@ -1,8 +1,8 @@
 ﻿using static TCSAHelper.Console.Utils;
 using TCSAHelper.Console;
-using Flashcards.Models;
 using Flashcards.DataAccess;
 using ConsoleTableExt;
+using Flashcards.Core;
 
 namespace Flashcards.UI;
 
@@ -73,7 +73,7 @@ internal static class ManageStacksMenu
 
         void PromptHandler(string userInput)
         {
-            var stackName = Stack.CreateSortName(userInput);
+            var stackName = StackManagement.CreateSortName(userInput);
             var stack = dataAccess.GetStackListItemBySortNameAsync(stackName).Result;
             if (stack != null)
             {

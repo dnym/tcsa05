@@ -1,6 +1,6 @@
 ﻿using ConsoleTableExt;
+using Flashcards.Core;
 using Flashcards.DataAccess;
-using Flashcards.Models;
 using TCSAHelper.Console;
 using static TCSAHelper.Console.Utils;
 
@@ -78,7 +78,7 @@ internal static class StudySessionMenu
 
         void PromptHandler(string userInput)
         {
-            var stackName = Stack.CreateSortName(userInput);
+            var stackName = StackManagement.CreateSortName(userInput);
             var stack = dataAccess.GetStackListItemBySortNameAsync(stackName).Result;
             if (stack != null)
             {

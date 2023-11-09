@@ -1,7 +1,6 @@
-﻿using Flashcards.DataAccess;
+﻿using Flashcards.Core;
+using Flashcards.DataAccess;
 using Flashcards.DataAccess.MockDB;
-using Flashcards.Models;
-using TCSAHelper.General;
 
 namespace Flashcards;
 
@@ -208,11 +207,10 @@ internal static class Program
         };
         foreach (var language in data.Keys)
         {
-            var stack = new Stack(language);
             dataAccess.CreateStackAsync(new()
             {
-                ViewName = stack.ViewName,
-                SortName = stack.SortName
+                ViewName = language,
+                SortName = StackManagement.CreateSortName(language)
             }).Wait();
         }
         foreach (var stackListItem in dataAccess.GetStackListAsync().Result)

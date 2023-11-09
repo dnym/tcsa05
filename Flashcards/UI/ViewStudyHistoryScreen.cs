@@ -1,8 +1,6 @@
 ﻿using ConsoleTableExt;
 using Flashcards.DataAccess;
 using Flashcards.DataAccess.DTOs;
-using System.Security.Principal;
-using System.Text;
 using TCSAHelper.Console;
 using static TCSAHelper.Console.Utils;
 
@@ -10,7 +8,7 @@ namespace Flashcards.UI;
 
 internal static class ViewStudyHistoryScreen
 {
-    public static Screen Get(DataAccess.IDataAccess dataAccess, HistoryListItem history)
+    public static Screen Get(IDataAccess dataAccess, HistoryListItem history)
     {
         const int headerHeight = 1;
         const int footerHeight = Screen.FooterPadding + Screen.FooterSeparatorHeight + 3;
