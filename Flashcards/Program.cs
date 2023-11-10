@@ -1,6 +1,5 @@
 ﻿using Flashcards.Core;
 using Flashcards.DataAccess;
-using Flashcards.DataAccess.MockDB;
 
 namespace Flashcards;
 
@@ -10,8 +9,8 @@ internal static class Program
 
     static void Main()
     {
-        IDataAccess _dataAccess = new MockDB();
-        AddDummyData(_dataAccess);
+        IDataAccess _dataAccess = new SqlDataAccess("Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=FlashcardsSQL;Integrated Security=True;Connect Timeout=60;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False");
+        //AddDummyData(_dataAccess);
         var screen = UI.MainMenu.Get(_dataAccess);
         screen.Show();
         Console.Clear();
@@ -205,8 +204,13 @@ internal static class Program
                 }
             }
         };
+        var existingStacks = dataAccess.GetStackListAsync().Result.ConvertAll(s => s.ViewName).ToHashSet();
         foreach (var language in data.Keys)
         {
+            if (existingStacks.Contains(language))
+            {
+                continue;
+            }
             dataAccess.CreateStackAsync(new()
             {
                 ViewName = language,
@@ -215,6 +219,11 @@ internal static class Program
         }
         foreach (var stackListItem in dataAccess.GetStackListAsync().Result)
         {
+            if (existingStacks.Contains(stackListItem.ViewName))
+            {
+                continue;
+            }
+
             foreach (var (front, back) in data[stackListItem.ViewName])
             {
                 dataAccess.CreateFlashcardAsync(new()

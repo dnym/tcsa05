@@ -1,4 +1,5 @@
 ﻿using Flashcards.DataAccess.DTOs;
+using Microsoft.Data.SqlClient;
 
 namespace Flashcards.DataAccess;
 
@@ -9,6 +10,16 @@ public class SqlDataAccess : IDataAccess
     public SqlDataAccess(string connectionString)
     {
         _connectionString = connectionString;
+
+//        using var connection = new SqlConnection(_connectionString);
+//        TryOrDie(connection.Open, "drop tables");
+//        var cmd = connection.CreateCommand();
+//        cmd.CommandText = @"DROP TABLE IF EXISTS StudyResult;
+//DROP TABLE IF EXISTS History;
+//DROP TABLE IF EXISTS Flashcard;
+//DROP TABLE IF EXISTS Stack;";
+//        TryOrDie(() => cmd.ExecuteNonQuery(), "drop tables");
+//        connection.Close();
     }
 
     public Task<int> CountStacksAsync(int? take = null, int skip = 0)
@@ -21,9 +32,40 @@ public class SqlDataAccess : IDataAccess
         throw new NotImplementedException();
     }
 
-    public Task<List<StackListItem>> GetStackListAsync(int? take = null, int skip = 0)
+    public async Task<List<StackListItem>> GetStackListAsync(int? take = null, int skip = 0)
     {
-        throw new NotImplementedException();
+        var output = new List<StackListItem>();
+
+        using var connection = new SqlConnection(_connectionString);
+        await TryOrDieAsync(connection.OpenAsync, "get stack list");
+
+        var cmd = connection.CreateCommand();
+        cmd.CommandText = "dbo.Stack_GetMultiple_tr";
+        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+        cmd.Parameters.AddWithValue("@Take", take);
+        cmd.Parameters.AddWithValue("@Skip", skip);
+        await TryOrDieAsync(async () =>
+        {
+            using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                var stack = new StackListItem
+                {
+                    Id = reader.GetInt32(0),
+                    ViewName = reader.GetString(1),
+                    Cards = reader.GetInt32(2)
+                };
+                if (!reader.IsDBNull(3))
+                {
+                    stack.LastStudied = reader.GetDateTime(3);
+                }
+                output.Add(stack);
+            }
+        }, "get stack list");
+
+        connection.Close();
+
+        return output;
     }
 
     public Task<StackListItem> GetStackListItemByIdAsync(int id)
@@ -41,9 +83,19 @@ public class SqlDataAccess : IDataAccess
         throw new NotImplementedException();
     }
 
-    public Task CreateStackAsync(NewStack stack)
+    public async Task CreateStackAsync(NewStack stack)
     {
-        throw new NotImplementedException();
+        using var connection = new SqlConnection(_connectionString);
+        await TryOrDieAsync(connection.OpenAsync, "create stack");
+
+        var cmd = connection.CreateCommand();
+        cmd.CommandText = "dbo.Stack_Create_tr";
+        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+        cmd.Parameters.AddWithValue("@ViewName", stack.ViewName);
+        cmd.Parameters.AddWithValue("@SortName", stack.SortName);
+        await TryOrDieAsync(cmd.ExecuteNonQueryAsync, "create stack");
+
+        connection.Close();
     }
 
     public Task DeleteStackAsync(int stackId)
@@ -66,9 +118,36 @@ public class SqlDataAccess : IDataAccess
         throw new NotImplementedException();
     }
 
-    public Task<List<ExistingFlashcard>> GetFlashcardListAsync(int stackId, int? take = null, int skip = 0)
+    public async Task<List<ExistingFlashcard>> GetFlashcardListAsync(int stackId, int? take = null, int skip = 0)
     {
-        throw new NotImplementedException();
+        var output = new List<ExistingFlashcard>();
+
+        using var connection = new SqlConnection(_connectionString);
+        await TryOrDieAsync(connection.OpenAsync, "get flashcard list");
+
+        var cmd = connection.CreateCommand();
+        cmd.CommandText = "dbo.Flashcard_GetMultiple_tr";
+        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+        cmd.Parameters.AddWithValue("@StackId", stackId);
+        cmd.Parameters.AddWithValue("@Take", take);
+        cmd.Parameters.AddWithValue("@Skip", skip);
+        await TryOrDieAsync(async () =>
+        {
+            using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                output.Add(new ExistingFlashcard
+                {
+                    Id = reader.GetInt32(0),
+                    Front = reader.GetString(1),
+                    Back = reader.GetString(2)
+                });
+            }
+        }, "get flashcard list");
+
+        connection.Close();
+
+        return output;
     }
 
     public Task<ExistingFlashcard> GetFlashcardByIdAsync(int id)
@@ -76,9 +155,20 @@ public class SqlDataAccess : IDataAccess
         throw new NotImplementedException();
     }
 
-    public Task CreateFlashcardAsync(NewFlashcard flashcard)
+    public async Task CreateFlashcardAsync(NewFlashcard flashcard)
     {
-        throw new NotImplementedException();
+        using var connection = new SqlConnection(_connectionString);
+        await TryOrDieAsync(connection.OpenAsync, "create flashcard");
+
+        var cmd = connection.CreateCommand();
+        cmd.CommandText = "dbo.Flashcard_Create_tr";
+        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+        cmd.Parameters.AddWithValue("@StackId", flashcard.StackId);
+        cmd.Parameters.AddWithValue("@Front", flashcard.Front);
+        cmd.Parameters.AddWithValue("@Back", flashcard.Back);
+        await TryOrDieAsync(cmd.ExecuteNonQueryAsync, "create flashcard");
+
+        connection.Close();
     }
 
     public Task UpdateFlashcardAsync(ExistingFlashcard flashcard)
@@ -114,5 +204,71 @@ public class SqlDataAccess : IDataAccess
     public Task<List<ExistingStudyResult>> GetStudyResults(int historyId, int? take = null, int skip = 0)
     {
         throw new NotImplementedException();
+    }
+
+    private static void TryOrDie(Action action, string purpose, string? formatError = null)
+    {
+        if (formatError == null)
+        {
+            try
+            {
+                action.Invoke();
+            }
+            catch (SqlException ex)
+            {
+                Console.WriteLine($"Failed to {purpose}: {ex.Message}\nAborting!");
+                Environment.Exit(1);
+            }
+        }
+        else
+        {
+            try
+            {
+                action.Invoke();
+            }
+            catch (SqlException ex)
+            {
+                Console.WriteLine($"Failed to {purpose}: {ex.Message}\nAborting!");
+                Environment.Exit(1);
+            }
+            catch (FormatException ex)
+            {
+                Console.WriteLine($"{formatError}: {ex.Message}\nAborting!");
+                Environment.Exit(1);
+            }
+        }
+    }
+
+    private static async Task TryOrDieAsync(Func<Task> func, string purpose, string? formatError = null)
+    {
+        if (formatError == null)
+        {
+            try
+            {
+                await func.Invoke();
+            }
+            catch (SqlException ex)
+            {
+                Console.WriteLine($"Failed to {purpose}: {ex.Message}\nAborting!");
+                Environment.Exit(1);
+            }
+        }
+        else
+        {
+            try
+            {
+                await func.Invoke();
+            }
+            catch (SqlException ex)
+            {
+                Console.WriteLine($"Failed to {purpose}: {ex.Message}\nAborting!");
+                Environment.Exit(1);
+            }
+            catch (FormatException ex)
+            {
+                Console.WriteLine($"{formatError}: {ex.Message}\nAborting!");
+                Environment.Exit(1);
+            }
+        }
     }
 }
