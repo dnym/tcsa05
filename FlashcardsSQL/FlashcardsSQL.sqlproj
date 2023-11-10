@@ -74,5 +74,9 @@
     <Build Include="dbo\Stored Procedures\Flashcard_Create_tr.sql" />
     <Build Include="dbo\Stored Procedures\History_Create_tr.sql" />
     <Build Include="dbo\Stored Procedures\StudyResult_Create_tr.sql" />
+    <Build Include="dbo\Stored Procedures\Stack_GetMultiple_tr.sql" />
+    <Build Include="dbo\Stored Procedures\Flashcard_GetMultiple_tr.sql" />
+    <Build Include="dbo\Stored Procedures\History_GetMultiple_tr.sql" />
+    <Build Include="dbo\Stored Procedures\StudyResult_GetMultiple_tr.sql" />
   </ItemGroup>
 </Project>
