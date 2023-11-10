@@ -15,7 +15,7 @@ AS
             COUNT(F.StackId) as Cards,
             MAX(H.StartedAt) as LastStudied
         FROM Stack AS S
-        INNER JOIN Flashcard AS F ON S.StackId = F.StackId
+        LEFT JOIN Flashcard AS F ON S.StackId = F.StackId
         LEFT JOIN History AS H ON S.StackId = H.StackId
         GROUP BY S.StackId, S.ViewName
         ORDER BY S.StackId
