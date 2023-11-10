@@ -1,7 +1,7 @@
 ﻿CREATE PROCEDURE [dbo].[StudyResult_GetMultiple_tr]
-    @historyId INT,
-    @skip INT = NULL,
-    @take INT = NULL
+    @HistoryId INT,
+    @Skip INT = NULL,
+    @Take INT = NULL
 AS
     BEGIN
         SET NOCOUNT ON;
@@ -17,9 +17,9 @@ AS
             R.AnsweredAt, R.WasCorrect
         FROM StudyResult AS R
         INNER JOIN Flashcard AS F ON R.FlashcardId = F.FlashcardId
-        WHERE R.HistoryId = @historyId
+        WHERE R.HistoryId = @HistoryId
         ORDER BY R.StudyResultId
-        OFFSET ISNULL(@skip, @SKIP_FALLBACK) ROWS
-        FETCH NEXT ISNULL(@take, @TAKE_FALLBACK) ROWS ONLY;
+        OFFSET ISNULL(@Skip, @SKIP_FALLBACK) ROWS
+        FETCH NEXT ISNULL(@Take, @TAKE_FALLBACK) ROWS ONLY;
     END
 RETURN 0

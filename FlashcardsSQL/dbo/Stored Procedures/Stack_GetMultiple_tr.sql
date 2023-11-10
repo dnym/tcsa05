@@ -1,6 +1,6 @@
 ﻿CREATE PROCEDURE [dbo].[Stack_GetMultiple_tr]
-    @skip INT = NULL,
-    @take INT = NULL
+    @Skip INT = NULL,
+    @Take INT = NULL
 AS
     BEGIN
         SET NOCOUNT ON;
@@ -19,7 +19,7 @@ AS
         LEFT JOIN History AS H ON S.StackId = H.StackId
         GROUP BY S.StackId, S.ViewName
         ORDER BY S.StackId
-        OFFSET ISNULL(@skip, @SKIP_FALLBACK) ROWS
-        FETCH NEXT ISNULL(@take, @TAKE_FALLBACK) ROWS ONLY;
+        OFFSET ISNULL(@Skip, @SKIP_FALLBACK) ROWS
+        FETCH NEXT ISNULL(@Take, @TAKE_FALLBACK) ROWS ONLY;
     END
 RETURN 0

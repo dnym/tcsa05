@@ -1,6 +1,6 @@
 ﻿CREATE PROCEDURE [dbo].[History_GetMultiple_tr]
-    @skip INT = NULL,
-    @take INT = NULL
+    @Skip INT = NULL,
+    @Take INT = NULL
 AS
     BEGIN
         SET NOCOUNT ON;
@@ -20,7 +20,7 @@ AS
         LEFT JOIN StudyResult AS R ON H.HistoryId = R.HistoryId
         GROUP BY H.HistoryId, H.StartedAt, S.ViewName
         ORDER BY H.HistoryId
-        OFFSET ISNULL(@skip, @SKIP_FALLBACK) ROWS
-        FETCH NEXT ISNULL(@take, @TAKE_FALLBACK) ROWS ONLY;
+        OFFSET ISNULL(@Skip, @SKIP_FALLBACK) ROWS
+        FETCH NEXT ISNULL(@Take, @TAKE_FALLBACK) ROWS ONLY;
     END
 RETURN 0

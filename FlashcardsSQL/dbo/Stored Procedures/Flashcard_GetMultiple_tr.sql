@@ -1,7 +1,7 @@
 ﻿CREATE PROCEDURE [dbo].[Flashcard_GetMultiple_tr]
-    @stackId INT,
-    @skip INT = NULL,
-    @take INT = NULL
+    @StackId INT,
+    @Skip INT = NULL,
+    @Take INT = NULL
 AS
     BEGIN
         SET NOCOUNT ON;
@@ -13,9 +13,9 @@ AS
 
         SELECT F.FlashcardId, F.Front, F.Back
         FROM Flashcard AS F
-        WHERE F.StackId = @stackId
+        WHERE F.StackId = @StackId
         ORDER BY F.FlashcardId
-        OFFSET ISNULL(@skip, @SKIP_FALLBACK) ROWS
-        FETCH NEXT ISNULL(@take, @TAKE_FALLBACK) ROWS ONLY;
+        OFFSET ISNULL(@Skip, @SKIP_FALLBACK) ROWS
+        FETCH NEXT ISNULL(@Take, @TAKE_FALLBACK) ROWS ONLY;
     END
 RETURN 0
