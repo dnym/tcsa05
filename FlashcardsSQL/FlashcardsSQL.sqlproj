@@ -78,5 +78,11 @@
     <Build Include="dbo\Stored Procedures\Flashcard_GetMultiple_tr.sql" />
     <Build Include="dbo\Stored Procedures\History_GetMultiple_tr.sql" />
     <Build Include="dbo\Stored Procedures\StudyResult_GetMultiple_tr.sql" />
+    <Build Include="dbo\Stored Procedures\Stack_Count_tr.sql" />
+    <Build Include="dbo\Stored Procedures\Stack_GetBySortName_tr.sql" />
+    <Build Include="dbo\Stored Procedures\Stack_GetById_tr.sql" />
+    <Build Include="dbo\Stored Procedures\Flashcard_Count_tr.sql" />
+    <Build Include="dbo\Stored Procedures\Flashcard_GetById_tr.sql" />
+    <Build Include="dbo\Stored Procedures\Stack_GetByFlashcardId_tr.sql" />
   </ItemGroup>
 </Project>

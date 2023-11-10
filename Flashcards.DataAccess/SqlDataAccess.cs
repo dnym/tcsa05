@@ -1,5 +1,6 @@
 ﻿using Flashcards.DataAccess.DTOs;
 using Microsoft.Data.SqlClient;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Flashcards.DataAccess;
 
@@ -22,9 +23,30 @@ public class SqlDataAccess : IDataAccess
 //        connection.Close();
     }
 
-    public Task<int> CountStacksAsync(int? take = null, int skip = 0)
+    public async Task<int> CountStacksAsync(int? take = null, int skip = 0)
     {
-        throw new NotImplementedException();
+        var output = 0;
+
+        using var connection = new SqlConnection(_connectionString);
+        await TryOrDieAsync(connection.OpenAsync, "count stacks");
+
+        var cmd = connection.CreateCommand();
+        cmd.CommandText = "dbo.Stack_Count_tr";
+        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+        cmd.Parameters.AddWithValue("@Take", take);
+        cmd.Parameters.AddWithValue("@Skip", skip);
+        await TryOrDieAsync(async () =>
+        {
+            using var reader = await cmd.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                output = reader.GetInt32(0);
+            }
+        }, "count stacks");
+
+        connection.Close();
+
+        return output;
     }
 
     public Task<bool> StackExistsAsync(string sortName)
@@ -68,19 +90,106 @@ public class SqlDataAccess : IDataAccess
         return output;
     }
 
-    public Task<StackListItem> GetStackListItemByIdAsync(int id)
+    public async Task<StackListItem> GetStackListItemByIdAsync(int id)
     {
-        throw new NotImplementedException();
+        StackListItem? output = null;
+
+        var connection = new SqlConnection(_connectionString);
+        await TryOrDieAsync(connection.OpenAsync, "get stack list item by id");
+
+        var cmd = connection.CreateCommand();
+        cmd.CommandText = "dbo.Stack_GetById_tr";
+        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+        cmd.Parameters.AddWithValue("@StackId", id);
+        await TryOrDieAsync(async () =>
+        {
+            using var reader = await cmd.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                output = new StackListItem
+                {
+                    Id = reader.GetInt32(0),
+                    ViewName = reader.GetString(1),
+                    Cards = reader.GetInt32(2)
+                };
+                if (!reader.IsDBNull(3))
+                {
+                    output.LastStudied = reader.GetDateTime(3);
+                }
+            }
+        }, "get stack list item by id");
+
+        connection.Close();
+
+        return output ?? throw new ArgumentException($"No stack with ID {id} exists.");
     }
 
-    public Task<StackListItem?> GetStackListItemBySortNameAsync(string sortName)
+    public async Task<StackListItem?> GetStackListItemBySortNameAsync(string sortName)
     {
-        throw new NotImplementedException();
+        StackListItem? output = null;
+
+        var connection = new SqlConnection(_connectionString);
+        await TryOrDieAsync(connection.OpenAsync, "get stack list item by sort name");
+
+        var cmd = connection.CreateCommand();
+        cmd.CommandText = "dbo.Stack_GetBySortName_tr";
+        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+        cmd.Parameters.AddWithValue("@SortName", sortName);
+        await TryOrDieAsync(async () =>
+        {
+            using var reader = await cmd.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                output = new StackListItem
+                {
+                    Id = reader.GetInt32(0),
+                    ViewName = reader.GetString(1),
+                    Cards = reader.GetInt32(2)
+                };
+                if (!reader.IsDBNull(3))
+                {
+                    output.LastStudied = reader.GetDateTime(3);
+                }
+            }
+        }, "get stack list item by sort name");
+
+        connection.Close();
+
+        return output;
     }
 
-    public Task<StackListItem> GetStackListItemByFlashcardIdAsync(int flashcardId)
+    public async Task<StackListItem> GetStackListItemByFlashcardIdAsync(int flashcardId)
     {
-        throw new NotImplementedException();
+        StackListItem? output = null;
+
+        var connection = new SqlConnection(_connectionString);
+        await TryOrDieAsync(connection.OpenAsync, "get stack list item by flashcard id");
+
+        var cmd = connection.CreateCommand();
+        cmd.CommandText = "dbo.Stack_GetByFlashcardId_tr";
+        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+        cmd.Parameters.AddWithValue("@FlashcardId", flashcardId);
+        await TryOrDieAsync(async () =>
+        {
+            using var reader = await cmd.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                output = new StackListItem
+                {
+                    Id = reader.GetInt32(0),
+                    ViewName = reader.GetString(1),
+                    Cards = reader.GetInt32(2)
+                };
+                if (!reader.IsDBNull(3))
+                {
+                    output.LastStudied = reader.GetDateTime(3);
+                }
+            }
+        }, "get stack list item by flashcard id");
+
+        connection.Close();
+
+        return output ?? throw new ArgumentException($"No stack with flashcard ID {flashcardId} exists.");
     }
 
     public async Task CreateStackAsync(NewStack stack)
@@ -108,9 +217,29 @@ public class SqlDataAccess : IDataAccess
         throw new NotImplementedException();
     }
 
-    public Task<int> CountFlashcardsAsync(int stackId)
+    public async Task<int> CountFlashcardsAsync(int stackId)
     {
-        throw new NotImplementedException();
+        var output = 0;
+
+        using var connection = new SqlConnection(_connectionString);
+        await TryOrDieAsync(connection.OpenAsync, "count flashcards in a stack");
+
+        var cmd = connection.CreateCommand();
+        cmd.CommandText = "dbo.Flashcard_Count_tr";
+        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+        cmd.Parameters.AddWithValue("@StackId", stackId);
+        await TryOrDieAsync(async () =>
+        {
+            using var reader = await cmd.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                output = reader.GetInt32(0);
+            }
+        }, "count flashcards in a stack");
+
+        connection.Close();
+
+        return output;
     }
 
     public Task<bool> CardInStack(int stackId, int flashcardId)
@@ -150,9 +279,33 @@ public class SqlDataAccess : IDataAccess
         return output;
     }
 
-    public Task<ExistingFlashcard> GetFlashcardByIdAsync(int id)
+    public async Task<ExistingFlashcard> GetFlashcardByIdAsync(int id)
     {
-        throw new NotImplementedException();
+        ExistingFlashcard? output = null;
+        using var connection = new SqlConnection(_connectionString);
+        TryOrDie(connection.Open, "get flashcard by id");
+
+        var cmd = connection.CreateCommand();
+        cmd.CommandText = "dbo.Flashcard_GetById_tr";
+        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+        cmd.Parameters.AddWithValue("@FlashcardId", id);
+        await TryOrDieAsync(async () =>
+        {
+            using var reader = await cmd.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                output = new ExistingFlashcard
+                {
+                    Id = reader.GetInt32(0),
+                    Front = reader.GetString(1),
+                    Back = reader.GetString(2)
+                };
+            }
+        }, "get flashcard by id");
+
+        connection.Close();
+
+        return output ?? throw new ArgumentException($"No flashcard with ID {id} exists.");
     }
 
     public async Task CreateFlashcardAsync(NewFlashcard flashcard)
