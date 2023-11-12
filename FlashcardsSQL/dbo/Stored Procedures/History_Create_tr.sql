@@ -6,5 +6,7 @@ AS
 		SET NOCOUNT ON;
 		INSERT INTO [dbo].[History] ([StartedAt], [StackId])
 		VALUES (@StartedAt, @StackId);
+
+		SELECT SCOPE_IDENTITY();
 	END
-RETURN 0
+RETURN SCOPE_IDENTITY()

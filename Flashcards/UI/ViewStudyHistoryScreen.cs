@@ -94,7 +94,7 @@ internal static class ViewStudyHistoryScreen
         int minListWidth = $"| no. | front | {Program.DateTimeFormat} | correct |".Length;
         int frontWidth = Math.Max(usableWidth - minListWidth, 5);
         var tableData = dataAccess.GetStudyResults(historyId, take, skip).Result
-            .ConvertAll(sr => new List<object> { sr.Ordinal + skip, TCSAHelper.General.Utils.LimitWidth(sr.Front, frontWidth), sr.AnsweredAt.ToLocalTime().ToString(Program.DateTimeFormat), sr.WasCorrect ? "yes" : "no" })
+            .ConvertAll(sr => new List<object> { sr.Ordinal, TCSAHelper.General.Utils.LimitWidth(sr.Front, frontWidth), sr.AnsweredAt.ToLocalTime().ToString(Program.DateTimeFormat), sr.WasCorrect ? "yes" : "no" })
             ?? new List<List<object>>();
         return ConsoleTableBuilder.From(tableData)
             .AddColumn("no.").AddColumn("front").AddColumn("answered at").AddColumn("correct")

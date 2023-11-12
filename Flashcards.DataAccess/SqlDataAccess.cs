@@ -334,24 +334,138 @@ public class SqlDataAccess : IDataAccess
         throw new NotImplementedException();
     }
 
-    public Task<int> CountHistoryAsync()
+    public async Task<int> CountHistoryAsync()
     {
-        throw new NotImplementedException();
+        var output = 0;
+
+        using var connection = new SqlConnection(_connectionString);
+        await TryOrDieAsync(connection.OpenAsync, "count history");
+
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = "dbo.History_Count_tr";
+        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+        await TryOrDieAsync(async () =>
+        {
+            using var reader = await cmd.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                output = reader.GetInt32(0);
+            }
+        }, "count history");
+
+        connection.Close();
+
+        return output;
     }
 
-    public Task<List<HistoryListItem>> GetHistoryListAsync(int? take = null, int skip = 0)
+    public async Task<List<HistoryListItem>> GetHistoryListAsync(int? take = null, int skip = 0)
     {
-        throw new NotImplementedException();
+        var output = new List<HistoryListItem>();
+
+        using var connection = new SqlConnection(_connectionString);
+        await TryOrDieAsync(connection.OpenAsync, "get history list");
+
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = "dbo.History_GetMultiple_tr";
+        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+        cmd.Parameters.AddWithValue("@Take", take);
+        cmd.Parameters.AddWithValue("@Skip", skip);
+        await TryOrDieAsync(async () =>
+        {
+            using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                output.Add(new HistoryListItem
+                {
+                    Id = reader.GetInt32(0),
+                    StartedAt = reader.GetDateTime(1),
+                    StackViewName = reader.GetString(2),
+                    CardsStudied = reader.GetInt32(3),
+                    CorrectAnswers = reader.GetInt32(4)
+                });
+            }
+        }, "get history list");
+
+        connection.Close();
+
+        return output;
     }
 
-    public Task AddHistoryAsync(NewHistory history)
+    public async Task AddHistoryAsync(NewHistory history)
     {
-        throw new NotImplementedException();
+        using var connection = new SqlConnection(_connectionString);
+        await TryOrDieAsync(connection.OpenAsync, "add history");
+
+        var transaction = connection.BeginTransaction();
+
+        try
+        {
+            int historyId = -1;
+            using (SqlCommand cmd = connection.CreateCommand())
+            {
+                cmd.CommandText = "dbo.History_Create_tr";
+                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@StartedAt", history.StartedAt);
+                cmd.Parameters.AddWithValue("@StackId", history.StackId);
+                cmd.Transaction = transaction;
+                decimal scopeIdentity = (decimal)(await cmd.ExecuteScalarAsync() ?? throw new ApplicationException("no new history id returned"));
+                historyId = (int)scopeIdentity;
+            }
+
+            foreach (NewStudyResult result in history.Results)
+            {
+                using var cmd = connection.CreateCommand();
+                cmd.CommandText = "dbo.StudyResult_Create_tr";
+                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@HistoryId", historyId);
+                cmd.Parameters.AddWithValue("@FlashcardId", result.FlashcardId);
+                cmd.Parameters.AddWithValue("@WasCorrect", result.WasCorrect);
+                cmd.Parameters.AddWithValue("@AnsweredAt", result.AnsweredAt);
+                cmd.Transaction = transaction;
+                await cmd.ExecuteNonQueryAsync();
+            }
+
+            transaction.Commit();
+        }
+        catch (Exception ex) when (ex is SqlException || ex is ApplicationException)
+        {
+            transaction.Rollback();
+            Console.WriteLine($"Failed to add history: {ex.Message}\nAborting!");
+            Environment.Exit(1);
+        }
     }
 
-    public Task<List<ExistingStudyResult>> GetStudyResults(int historyId, int? take = null, int skip = 0)
+    public async Task<List<ExistingStudyResult>> GetStudyResults(int historyId, int? take = null, int skip = 0)
     {
-        throw new NotImplementedException();
+        var output = new List<ExistingStudyResult>();
+
+        using var connection = new SqlConnection(_connectionString);
+        await TryOrDieAsync(connection.OpenAsync, "get study results");
+
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = "dbo.StudyResult_GetMultiple_tr";
+        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+        cmd.Parameters.AddWithValue("@HistoryId", historyId);
+        cmd.Parameters.AddWithValue("@Take", take);
+        cmd.Parameters.AddWithValue("@Skip", skip);
+        await TryOrDieAsync(async () =>
+        {
+            using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                output.Add(new ExistingStudyResult
+                {
+                    Ordinal = (int)reader.GetInt64(0),
+                    Front = reader.GetString(1),
+                    AnsweredAt = reader.GetDateTime(2),
+                    WasCorrect = reader.GetBoolean(3)
+                });
+            }
+        }, "get study results");
+
+        connection.Close();
+
+        return output;
     }
 
     private static void TryOrDie(Action action, string purpose, string? formatError = null)

@@ -84,5 +84,6 @@
     <Build Include="dbo\Stored Procedures\Flashcard_Count_tr.sql" />
     <Build Include="dbo\Stored Procedures\Flashcard_GetById_tr.sql" />
     <Build Include="dbo\Stored Procedures\Stack_GetByFlashcardId_tr.sql" />
+    <Build Include="dbo\Stored Procedures\History_Count_tr.sql" />
   </ItemGroup>
 </Project>
