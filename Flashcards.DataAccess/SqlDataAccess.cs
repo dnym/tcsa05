@@ -202,14 +202,34 @@ public class SqlDataAccess : IDataAccess
         await connection.CloseAsync();
     }
 
-    public Task DeleteStackAsync(int stackId)
+    public async Task DeleteStackAsync(int stackId)
     {
-        throw new NotImplementedException();
+        using var connection = new SqlConnection(_connectionString);
+        await TryOrDieAsync(connection.OpenAsync, "delete stack");
+
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = "dbo.Stack_Delete_tr";
+        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+        cmd.Parameters.AddWithValue("@StackId", stackId);
+        await TryOrDieAsync(cmd.ExecuteNonQueryAsync, "delete stack");
+
+        await connection.CloseAsync();
     }
 
-    public Task RenameStackAsync(int oldStackId, NewStack updatedStack)
+    public async Task RenameStackAsync(int oldStackId, NewStack updatedStack)
     {
-        throw new NotImplementedException();
+        using var connection = new SqlConnection(_connectionString);
+        await TryOrDieAsync(connection.OpenAsync, "rename stack");
+
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = "dbo.Stack_Rename_tr";
+        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+        cmd.Parameters.AddWithValue("@StackId", oldStackId);
+        cmd.Parameters.AddWithValue("@ViewName", updatedStack.ViewName);
+        cmd.Parameters.AddWithValue("@SortName", updatedStack.SortName);
+        await TryOrDieAsync(cmd.ExecuteNonQueryAsync, "rename stack");
+
+        await connection.CloseAsync();
     }
 
     public async Task<int> CountFlashcardsAsync(int stackId)
