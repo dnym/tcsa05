@@ -30,7 +30,7 @@ public class SqlDataAccess : IDataAccess
         using var connection = new SqlConnection(_connectionString);
         await TryOrDieAsync(connection.OpenAsync, "count stacks");
 
-        var cmd = connection.CreateCommand();
+        using var cmd = connection.CreateCommand();
         cmd.CommandText = "dbo.Stack_Count_tr";
         cmd.CommandType = System.Data.CommandType.StoredProcedure;
         cmd.Parameters.AddWithValue("@Take", take);
@@ -56,7 +56,7 @@ public class SqlDataAccess : IDataAccess
         using var connection = new SqlConnection(_connectionString);
         await TryOrDieAsync(connection.OpenAsync, "get stack list");
 
-        var cmd = connection.CreateCommand();
+        using var cmd = connection.CreateCommand();
         cmd.CommandText = "dbo.Stack_GetMultiple_tr";
         cmd.CommandType = System.Data.CommandType.StoredProcedure;
         cmd.Parameters.AddWithValue("@Take", take);
@@ -92,7 +92,7 @@ public class SqlDataAccess : IDataAccess
         var connection = new SqlConnection(_connectionString);
         await TryOrDieAsync(connection.OpenAsync, "get stack list item by id");
 
-        var cmd = connection.CreateCommand();
+        using var cmd = connection.CreateCommand();
         cmd.CommandText = "dbo.Stack_GetById_tr";
         cmd.CommandType = System.Data.CommandType.StoredProcedure;
         cmd.Parameters.AddWithValue("@StackId", id);
@@ -126,7 +126,7 @@ public class SqlDataAccess : IDataAccess
         var connection = new SqlConnection(_connectionString);
         await TryOrDieAsync(connection.OpenAsync, "get stack list item by sort name");
 
-        var cmd = connection.CreateCommand();
+        using var cmd = connection.CreateCommand();
         cmd.CommandText = "dbo.Stack_GetBySortName_tr";
         cmd.CommandType = System.Data.CommandType.StoredProcedure;
         cmd.Parameters.AddWithValue("@SortName", sortName);
@@ -160,7 +160,7 @@ public class SqlDataAccess : IDataAccess
         var connection = new SqlConnection(_connectionString);
         await TryOrDieAsync(connection.OpenAsync, "get stack list item by flashcard id");
 
-        var cmd = connection.CreateCommand();
+        using var cmd = connection.CreateCommand();
         cmd.CommandText = "dbo.Stack_GetByFlashcardId_tr";
         cmd.CommandType = System.Data.CommandType.StoredProcedure;
         cmd.Parameters.AddWithValue("@FlashcardId", flashcardId);
@@ -192,7 +192,7 @@ public class SqlDataAccess : IDataAccess
         using var connection = new SqlConnection(_connectionString);
         await TryOrDieAsync(connection.OpenAsync, "create stack");
 
-        var cmd = connection.CreateCommand();
+        using var cmd = connection.CreateCommand();
         cmd.CommandText = "dbo.Stack_Create_tr";
         cmd.CommandType = System.Data.CommandType.StoredProcedure;
         cmd.Parameters.AddWithValue("@ViewName", stack.ViewName);
@@ -219,7 +219,7 @@ public class SqlDataAccess : IDataAccess
         using var connection = new SqlConnection(_connectionString);
         await TryOrDieAsync(connection.OpenAsync, "count flashcards in a stack");
 
-        var cmd = connection.CreateCommand();
+        using var cmd = connection.CreateCommand();
         cmd.CommandText = "dbo.Flashcard_Count_tr";
         cmd.CommandType = System.Data.CommandType.StoredProcedure;
         cmd.Parameters.AddWithValue("@StackId", stackId);
@@ -249,7 +249,7 @@ public class SqlDataAccess : IDataAccess
         using var connection = new SqlConnection(_connectionString);
         await TryOrDieAsync(connection.OpenAsync, "get flashcard list");
 
-        var cmd = connection.CreateCommand();
+        using var cmd = connection.CreateCommand();
         cmd.CommandText = "dbo.Flashcard_GetMultiple_tr";
         cmd.CommandType = System.Data.CommandType.StoredProcedure;
         cmd.Parameters.AddWithValue("@StackId", stackId);
@@ -280,7 +280,7 @@ public class SqlDataAccess : IDataAccess
         using var connection = new SqlConnection(_connectionString);
         TryOrDie(connection.Open, "get flashcard by id");
 
-        var cmd = connection.CreateCommand();
+        using var cmd = connection.CreateCommand();
         cmd.CommandText = "dbo.Flashcard_GetById_tr";
         cmd.CommandType = System.Data.CommandType.StoredProcedure;
         cmd.Parameters.AddWithValue("@FlashcardId", id);
@@ -308,7 +308,7 @@ public class SqlDataAccess : IDataAccess
         using var connection = new SqlConnection(_connectionString);
         await TryOrDieAsync(connection.OpenAsync, "create flashcard");
 
-        var cmd = connection.CreateCommand();
+        using var cmd = connection.CreateCommand();
         cmd.CommandText = "dbo.Flashcard_Create_tr";
         cmd.CommandType = System.Data.CommandType.StoredProcedure;
         cmd.Parameters.AddWithValue("@StackId", flashcard.StackId);
