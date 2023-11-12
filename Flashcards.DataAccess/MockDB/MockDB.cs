@@ -260,7 +260,7 @@ public class MockDB : IDataAccess
 
         return Task.FromResult(resultRows.ConvertAll(r => new ExistingStudyResult()
         {
-            Ordinal = resultRows.IndexOf(r) + 1,
+            Ordinal = resultRows.IndexOf(r) + 1 + skip,
             Front = _flashcards.Find(f => f.IdPK == r.FlashcardIdFK)?.Front ?? throw new ApplicationException("Bad data: there's a study result row with non-existant flashcard."),
             WasCorrect = r.WasCorrect,
             AnsweredAt = r.AnsweredAt
