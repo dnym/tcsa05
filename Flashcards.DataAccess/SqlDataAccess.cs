@@ -1,6 +1,5 @@
 ﻿using Flashcards.DataAccess.DTOs;
 using Microsoft.Data.SqlClient;
-using System.Security.Cryptography.X509Certificates;
 
 namespace Flashcards.DataAccess;
 
@@ -11,16 +10,6 @@ public class SqlDataAccess : IDataAccess
     public SqlDataAccess(string connectionString)
     {
         _connectionString = connectionString;
-
-//        using var connection = new SqlConnection(_connectionString);
-//        TryOrDie(connection.Open, "drop tables");
-//        var cmd = connection.CreateCommand();
-//        cmd.CommandText = @"DROP TABLE IF EXISTS StudyResult;
-//DROP TABLE IF EXISTS History;
-//DROP TABLE IF EXISTS Flashcard;
-//DROP TABLE IF EXISTS Stack;";
-//        TryOrDie(() => cmd.ExecuteNonQuery(), "drop tables");
-//        connection.Close();
     }
 
     public async Task<int> CountStacksAsync(int? take = null, int skip = 0)
@@ -257,9 +246,26 @@ public class SqlDataAccess : IDataAccess
         return output;
     }
 
-    public Task<bool> CardInStack(int stackId, int flashcardId)
+    public async Task<bool> CardInStack(int stackId, int flashcardId)
     {
-        throw new NotImplementedException();
+        var output = false;
+
+        using var connection = new SqlConnection(_connectionString);
+        await TryOrDieAsync(connection.OpenAsync, "check if card is in stack");
+
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = "dbo.Flashcard_IsInStack_tr";
+        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+        cmd.Parameters.AddWithValue("@StackId", stackId);
+        cmd.Parameters.AddWithValue("@FlashcardId", flashcardId);
+        await TryOrDieAsync(async () =>
+        {
+            output = ((int)cmd.ExecuteScalar()) != 0;
+        }, "check if card is in stack");
+
+        await connection.CloseAsync();
+
+        return output;
     }
 
     public async Task<List<ExistingFlashcard>> GetFlashcardListAsync(int stackId, int? take = null, int skip = 0)
@@ -298,7 +304,7 @@ public class SqlDataAccess : IDataAccess
     {
         ExistingFlashcard? output = null;
         using var connection = new SqlConnection(_connectionString);
-        TryOrDie(connection.Open, "get flashcard by id");
+        await TryOrDieAsync(connection.OpenAsync, "get flashcard by id");
 
         using var cmd = connection.CreateCommand();
         cmd.CommandText = "dbo.Flashcard_GetById_tr";
@@ -339,19 +345,49 @@ public class SqlDataAccess : IDataAccess
         await connection.CloseAsync();
     }
 
-    public Task UpdateFlashcardAsync(ExistingFlashcard flashcard)
+    public async Task UpdateFlashcardAsync(ExistingFlashcard flashcard)
     {
-        throw new NotImplementedException();
+        using var connection = new SqlConnection(_connectionString);
+        await TryOrDieAsync(connection.OpenAsync, "update flashcard");
+
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = "dbo.Flashcard_Update_tr";
+        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+        cmd.Parameters.AddWithValue("@FlashcardId", flashcard.Id);
+        cmd.Parameters.AddWithValue("@Front", flashcard.Front);
+        cmd.Parameters.AddWithValue("@Back", flashcard.Back);
+        await TryOrDieAsync(cmd.ExecuteNonQueryAsync, "update flashcard");
+
+        await connection.CloseAsync();
     }
 
-    public Task MoveFlashcardAsync(int flashcardId, int newStackId)
+    public async Task MoveFlashcardAsync(int flashcardId, int newStackId)
     {
-        throw new NotImplementedException();
+        using var connection = new SqlConnection(_connectionString);
+        await TryOrDieAsync(connection.OpenAsync, "move flashcard");
+
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = "dbo.Flashcard_MoveStack_tr";
+        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+        cmd.Parameters.AddWithValue("@FlashcardId", flashcardId);
+        cmd.Parameters.AddWithValue("@StackId", newStackId);
+        await TryOrDieAsync(cmd.ExecuteNonQueryAsync, "move flashcard");
+
+        await connection.CloseAsync();
     }
 
-    public Task DeleteFlashcardAsync(int id)
+    public async Task DeleteFlashcardAsync(int id)
     {
-        throw new NotImplementedException();
+        using var connection = new SqlConnection(_connectionString);
+        await TryOrDieAsync(connection.OpenAsync, "delete flashcard");
+
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = "dbo.Flashcard_Delete_tr";
+        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+        cmd.Parameters.AddWithValue("@FlashcardId", id);
+        await TryOrDieAsync(cmd.ExecuteNonQueryAsync, "delete flashcard");
+
+        await connection.CloseAsync();
     }
 
     public async Task<int> CountHistoryAsync()
@@ -486,39 +522,6 @@ public class SqlDataAccess : IDataAccess
         await connection.CloseAsync();
 
         return output;
-    }
-
-    private static void TryOrDie(Action action, string purpose, string? formatError = null)
-    {
-        if (formatError == null)
-        {
-            try
-            {
-                action.Invoke();
-            }
-            catch (SqlException ex)
-            {
-                Console.WriteLine($"Failed to {purpose}: {ex.Message}\nAborting!");
-                Environment.Exit(1);
-            }
-        }
-        else
-        {
-            try
-            {
-                action.Invoke();
-            }
-            catch (SqlException ex)
-            {
-                Console.WriteLine($"Failed to {purpose}: {ex.Message}\nAborting!");
-                Environment.Exit(1);
-            }
-            catch (FormatException ex)
-            {
-                Console.WriteLine($"{formatError}: {ex.Message}\nAborting!");
-                Environment.Exit(1);
-            }
-        }
     }
 
     private static async Task TryOrDieAsync(Func<Task> func, string purpose, string? formatError = null)

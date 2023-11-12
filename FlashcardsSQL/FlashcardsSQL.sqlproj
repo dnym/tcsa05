@@ -87,5 +87,9 @@
     <Build Include="dbo\Stored Procedures\History_Count_tr.sql" />
     <Build Include="dbo\Stored Procedures\Stack_Delete_tr.sql" />
     <Build Include="dbo\Stored Procedures\Stack_Rename_tr.sql" />
+    <Build Include="dbo\Stored Procedures\Flashcard_IsInStack_tr.sql" />
+    <Build Include="dbo\Stored Procedures\Flashcard_Update_tr.sql" />
+    <Build Include="dbo\Stored Procedures\Flashcard_MoveStack_tr.sql" />
+    <Build Include="dbo\Stored Procedures\Flashcard_Delete_tr.sql" />
   </ItemGroup>
 </Project>
