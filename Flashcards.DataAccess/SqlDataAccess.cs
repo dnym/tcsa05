@@ -260,7 +260,8 @@ public class SqlDataAccess : IDataAccess
         cmd.Parameters.AddWithValue("@FlashcardId", flashcardId);
         await TryOrDieAsync(async () =>
         {
-            output = ((int)cmd.ExecuteScalar()) != 0;
+            var result = await cmd.ExecuteScalarAsync() ?? 0;
+            output = ((int)result) != 0;
         }, "check if card is in stack");
 
         await connection.CloseAsync();
