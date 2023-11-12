@@ -32,7 +32,7 @@ internal static class MoveFlashcardScreen
             }
             else
             {
-                dataAccess.MoveFlashcardAsync(flashcardId, otherStack.Id);
+                dataAccess.MoveFlashcardAsync(flashcardId, otherStack.Id).Wait();
                 screen.ExitScreen();
             }
         });

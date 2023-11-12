@@ -364,15 +364,89 @@ public class SqlDataAccess : IDataAccess
 
     public async Task MoveFlashcardAsync(int flashcardId, int newStackId)
     {
+        // Care must be taken to keep the history correct. Thus, a new history row must be created with the same study date as the old one.
+        // But first we check for any existing history rows for the new stack with the same date and time. If there are any, we use that one instead.
         using var connection = new SqlConnection(_connectionString);
         await TryOrDieAsync(connection.OpenAsync, "move flashcard");
 
-        using var cmd = connection.CreateCommand();
-        cmd.CommandText = "dbo.Flashcard_MoveStack_tr";
-        cmd.CommandType = System.Data.CommandType.StoredProcedure;
-        cmd.Parameters.AddWithValue("@FlashcardId", flashcardId);
-        cmd.Parameters.AddWithValue("@StackId", newStackId);
-        await TryOrDieAsync(cmd.ExecuteNonQueryAsync, "move flashcard");
+        var transaction = connection.BeginTransaction();
+
+        try
+        {
+            List<HistoryRow> oldHistoryRows = new();
+
+            using (SqlCommand cmd = connection.CreateCommand())
+            {
+                cmd.CommandText = "dbo.History_GetMultipleByFlashcard_tr";
+                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@FlashcardId", flashcardId);
+                cmd.Transaction = transaction;
+                using var reader = await cmd.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
+                {
+                    oldHistoryRows.Add(new HistoryRow
+                    {
+                        HistoryId = reader.GetInt32(0),
+                        StackId = reader.GetInt32(1),
+                        StartedAt = reader.GetDateTime(2)
+                    });
+                }
+            }
+
+            foreach (var historyRow in oldHistoryRows)
+            {
+                int newHistoryId = -1;
+
+                using (SqlCommand cmd = connection.CreateCommand())
+                {
+                    cmd.CommandText = "dbo.History_GetByStackAndDateOrCreate_tr";
+                    cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@StackId", newStackId);
+                    cmd.Parameters.AddWithValue("@StartedAt", historyRow.StartedAt);
+                    cmd.Transaction = transaction;
+                    int scopeIdentity = (int)(await cmd.ExecuteScalarAsync() ?? throw new ApplicationException("no new history id returned"));
+                    newHistoryId = (int)scopeIdentity;
+                }
+
+                using (SqlCommand cmd = connection.CreateCommand())
+                {
+                    cmd.CommandText = "dbo.StudyResult_MoveMultiple_tr";
+                    cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@FlashcardId", flashcardId);
+                    cmd.Parameters.AddWithValue("@OldHistoryId", historyRow.HistoryId);
+                    cmd.Parameters.AddWithValue("@NewHistoryId", newHistoryId);
+                    cmd.Transaction = transaction;
+                    await cmd.ExecuteNonQueryAsync();
+                }
+
+                using (SqlCommand cmd = connection.CreateCommand())
+                {
+                    cmd.CommandText = "dbo.History_DeleteUnused_tr";
+                    cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@HistoryId", historyRow.HistoryId);
+                    cmd.Transaction = transaction;
+                    await cmd.ExecuteNonQueryAsync();
+                }
+            }
+
+            using (SqlCommand cmd = connection.CreateCommand())
+            {
+                cmd.CommandText = "dbo.Flashcard_MoveStack_tr";
+                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@FlashcardId", flashcardId);
+                cmd.Parameters.AddWithValue("@StackId", newStackId);
+                cmd.Transaction = transaction;
+                await cmd.ExecuteNonQueryAsync();
+            }
+
+            transaction.Commit();
+        }
+        catch (Exception ex) when (ex is SqlException || ex is ApplicationException)
+        {
+            transaction.Rollback();
+            Console.WriteLine($"Failed to move flashcard: {ex.Message}\nAborting!");
+            Environment.Exit(1);
+        }
 
         await connection.CloseAsync();
     }
@@ -556,5 +630,12 @@ public class SqlDataAccess : IDataAccess
                 Environment.Exit(1);
             }
         }
+    }
+
+    private class HistoryRow
+    {
+        public int HistoryId { get; set; }
+        public int StackId { get; set; }
+        public DateTime StartedAt { get; set; }
     }
 }

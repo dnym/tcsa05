@@ -91,5 +91,9 @@
     <Build Include="dbo\Stored Procedures\Flashcard_Update_tr.sql" />
     <Build Include="dbo\Stored Procedures\Flashcard_MoveStack_tr.sql" />
     <Build Include="dbo\Stored Procedures\Flashcard_Delete_tr.sql" />
+    <Build Include="dbo\Stored Procedures\History_GetMultipleByFlashcard_tr.sql" />
+    <Build Include="dbo\Stored Procedures\History_GetByStackAndDateOrCreate_tr.sql" />
+    <Build Include="dbo\Stored Procedures\StudyResult_MoveMultiple_tr.sql" />
+    <Build Include="dbo\Stored Procedures\History_DeleteUnused_tr.sql" />
   </ItemGroup>
 </Project>
