@@ -44,7 +44,7 @@ public class SqlDataAccess : IDataAccess
             }
         }, "count stacks");
 
-        connection.Close();
+        await connection.CloseAsync();
 
         return output;
     }
@@ -80,7 +80,7 @@ public class SqlDataAccess : IDataAccess
             }
         }, "get stack list");
 
-        connection.Close();
+        await connection.CloseAsync();
 
         return output;
     }
@@ -114,7 +114,7 @@ public class SqlDataAccess : IDataAccess
             }
         }, "get stack list item by id");
 
-        connection.Close();
+        await connection.CloseAsync();
 
         return output ?? throw new ArgumentException($"No stack with ID {id} exists.");
     }
@@ -148,7 +148,7 @@ public class SqlDataAccess : IDataAccess
             }
         }, "get stack list item by sort name");
 
-        connection.Close();
+        await connection.CloseAsync();
 
         return output;
     }
@@ -182,7 +182,7 @@ public class SqlDataAccess : IDataAccess
             }
         }, "get stack list item by flashcard id");
 
-        connection.Close();
+        await connection.CloseAsync();
 
         return output ?? throw new ArgumentException($"No stack with flashcard ID {flashcardId} exists.");
     }
@@ -199,7 +199,7 @@ public class SqlDataAccess : IDataAccess
         cmd.Parameters.AddWithValue("@SortName", stack.SortName);
         await TryOrDieAsync(cmd.ExecuteNonQueryAsync, "create stack");
 
-        connection.Close();
+        await connection.CloseAsync();
     }
 
     public Task DeleteStackAsync(int stackId)
@@ -232,7 +232,7 @@ public class SqlDataAccess : IDataAccess
             }
         }, "count flashcards in a stack");
 
-        connection.Close();
+        await connection.CloseAsync();
 
         return output;
     }
@@ -269,7 +269,7 @@ public class SqlDataAccess : IDataAccess
             }
         }, "get flashcard list");
 
-        connection.Close();
+        await connection.CloseAsync();
 
         return output;
     }
@@ -298,7 +298,7 @@ public class SqlDataAccess : IDataAccess
             }
         }, "get flashcard by id");
 
-        connection.Close();
+        await connection.CloseAsync();
 
         return output ?? throw new ArgumentException($"No flashcard with ID {id} exists.");
     }
@@ -316,7 +316,7 @@ public class SqlDataAccess : IDataAccess
         cmd.Parameters.AddWithValue("@Back", flashcard.Back);
         await TryOrDieAsync(cmd.ExecuteNonQueryAsync, "create flashcard");
 
-        connection.Close();
+        await connection.CloseAsync();
     }
 
     public Task UpdateFlashcardAsync(ExistingFlashcard flashcard)
@@ -353,7 +353,7 @@ public class SqlDataAccess : IDataAccess
             }
         }, "count history");
 
-        connection.Close();
+        await connection.CloseAsync();
 
         return output;
     }
@@ -386,7 +386,7 @@ public class SqlDataAccess : IDataAccess
             }
         }, "get history list");
 
-        connection.Close();
+        await connection.CloseAsync();
 
         return output;
     }
@@ -463,7 +463,7 @@ public class SqlDataAccess : IDataAccess
             }
         }, "get study results");
 
-        connection.Close();
+        await connection.CloseAsync();
 
         return output;
     }
