@@ -5,7 +5,6 @@ namespace Flashcards.DataAccess;
 public interface IDataAccess
 {
     Task<int> CountStacksAsync(int? take = null, int skip = 0);
-    Task<bool> StackExistsAsync(string sortName);
     Task<List<StackListItem>> GetStackListAsync(int? take = null, int skip = 0);
     Task<StackListItem> GetStackListItemByIdAsync(int id);
     Task<StackListItem?> GetStackListItemBySortNameAsync(string sortName);

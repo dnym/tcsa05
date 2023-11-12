@@ -20,11 +20,6 @@ public class MockDB : IDataAccess
         return Task.FromResult(_stacks.Skip(skip).Take((int)take).Count());
     }
 
-    public Task<bool> StackExistsAsync(string sortName)
-    {
-        return Task.FromResult(_stacks.Any(sr => sr.SortNameUQ == sortName));
-    }
-
     private StackListItem RowToStackListItem(StacksRow sr)
     {
         DateTime? lastStudied = null;

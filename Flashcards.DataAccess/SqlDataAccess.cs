@@ -49,11 +49,6 @@ public class SqlDataAccess : IDataAccess
         return output;
     }
 
-    public Task<bool> StackExistsAsync(string sortName)
-    {
-        throw new NotImplementedException();
-    }
-
     public async Task<List<StackListItem>> GetStackListAsync(int? take = null, int skip = 0)
     {
         var output = new List<StackListItem>();
