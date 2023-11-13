@@ -63,6 +63,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="PublishLocations\FlashcardsSQL.publish.xml" />
+    <None Include="SampleData.sql" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="dbo\Tables\Stack.sql" />
