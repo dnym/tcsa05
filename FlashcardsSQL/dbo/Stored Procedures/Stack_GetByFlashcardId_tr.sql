@@ -6,7 +6,7 @@ AS
 
 		SELECT TOP 1
 			S.StackId, S.ViewName,
-			COUNT(F.StackId) as Cards,
+			(SELECT COUNT(1) FROM Flashcard AS FC WHERE FC.StackId = S.StackId) as Cards,
 			MAX(H.StartedAt) as LastStudied
 		FROM Stack AS S
 		LEFT JOIN Flashcard AS F ON S.StackId = F.StackId
