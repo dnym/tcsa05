@@ -10,6 +10,26 @@ public class SqlDataAccess : IDataAccess
     public SqlDataAccess(string connectionString)
     {
         _connectionString = connectionString;
+
+        Task.Run(() =>
+        {
+            try
+            {
+                var builder = new SqlConnectionStringBuilder(_connectionString)
+                {
+                    ConnectTimeout = 5
+                };
+                using var connection = new SqlConnection(builder.ConnectionString);
+                connection.Open();
+                connection.Close();
+    }
+            catch (SqlException ex)
+            {
+                Console.Clear();
+                Console.WriteLine($"Database connection error: {ex.Message}\n\nSuggestion: verify your connection string.\n\nAborting!");
+                Environment.Exit(1);
+            }
+        });
     }
 
     public async Task<int> CountStacksAsync(int? take = null, int skip = 0)
