@@ -1,5 +1,4 @@
-﻿using Flashcards.Core;
-using Flashcards.DataAccess;
+﻿using Flashcards.DataAccess;
 using System.Configuration;
 
 namespace Flashcards;

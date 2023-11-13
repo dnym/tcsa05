@@ -1,6 +1,5 @@
 ﻿using Flashcards.DataAccess.DTOs;
 using Flashcards.DataAccess.MockDB.Models;
-using System.Linq;
 
 namespace Flashcards.DataAccess.MockDB;
 
