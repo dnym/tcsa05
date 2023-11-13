@@ -22,7 +22,7 @@ public class SqlDataAccess : IDataAccess
                 using var connection = new SqlConnection(builder.ConnectionString);
                 connection.Open();
                 connection.Close();
-    }
+            }
             catch (SqlException ex)
             {
                 Console.Clear();
@@ -464,6 +464,7 @@ public class SqlDataAccess : IDataAccess
         catch (Exception ex) when (ex is SqlException || ex is ApplicationException)
         {
             transaction.Rollback();
+            Console.Clear();
             Console.WriteLine($"Failed to move flashcard: {ex.Message}\nAborting!");
             Environment.Exit(1);
         }
@@ -581,6 +582,7 @@ public class SqlDataAccess : IDataAccess
         catch (Exception ex) when (ex is SqlException || ex is ApplicationException)
         {
             transaction.Rollback();
+            Console.Clear();
             Console.WriteLine($"Failed to add history: {ex.Message}\nAborting!");
             Environment.Exit(1);
         }
@@ -629,6 +631,7 @@ public class SqlDataAccess : IDataAccess
             }
             catch (SqlException ex)
             {
+                Console.Clear();
                 Console.WriteLine($"Failed to {purpose}: {ex.Message}\nAborting!");
                 Environment.Exit(1);
             }
@@ -641,11 +644,13 @@ public class SqlDataAccess : IDataAccess
             }
             catch (SqlException ex)
             {
+                Console.Clear();
                 Console.WriteLine($"Failed to {purpose}: {ex.Message}\nAborting!");
                 Environment.Exit(1);
             }
             catch (FormatException ex)
             {
+                Console.Clear();
                 Console.WriteLine($"{formatError}: {ex.Message}\nAborting!");
                 Environment.Exit(1);
             }
